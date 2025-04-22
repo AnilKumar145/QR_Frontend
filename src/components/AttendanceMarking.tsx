@@ -16,6 +16,14 @@ import { useGeolocation } from '../hooks/useGeoLocation';
 import { attendanceService } from '../services/attendanceService';
 import { useParams } from 'react-router-dom';
 
+interface ApiError extends Error {
+    response?: {
+        data?: {
+            detail?: string;
+        };
+    };
+}
+
 export const AttendanceMarking: React.FC = () => {
     const { sessionId } = useParams();
     const [formData, setFormData] = useState({
@@ -79,16 +87,32 @@ export const AttendanceMarking: React.FC = () => {
         setError(null);
 
         try {
-            await attendanceService.markAttendance({
+            // Add detailed logging
+            console.log('Location data:', location);
+            console.log('Session ID:', sessionId);
+            console.log('Form data:', formData);
+
+            const response = await attendanceService.markAttendance({
                 session_id: sessionId,
                 ...formData,
                 location_lat: location.latitude,
                 location_lon: location.longitude,
                 selfie: selfie,
             });
+
+            console.log('Attendance response:', response);
             setSuccess(true);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to mark attendance');
+        } catch (err: unknown) {
+            // Type guard to ensure error is of type ApiError
+            const error = err as ApiError;
+            
+            // More detailed error logging
+            console.error('Form submission error:', error);
+            console.error('Error response:', error.response?.data);
+            
+            // Show more specific error message
+            const errorMessage = error.response?.data?.detail || error.message || 'Failed to mark attendance';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -220,6 +244,11 @@ export const AttendanceMarking: React.FC = () => {
         </Card>
     );
 };
+
+
+
+
+
 
 
 
