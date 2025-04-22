@@ -9,7 +9,7 @@ export const api = axios.create({
         'Accept': 'application/json'
     },
     timeout: 10000,
-    withCredentials: false // Change this to false if CORS is an issue
+    withCredentials: true
 });
 
 // Enhanced error handling
