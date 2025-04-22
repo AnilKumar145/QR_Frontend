@@ -40,6 +40,7 @@ export const attendanceService = {
         });
 
         try {
+            console.log('Attempting to connect to:', import.meta.env.VITE_API_BASE_URL);
             console.log('Sending attendance data:', {
                 ...data,
                 selfie: 'File object' // Don't log the actual file
@@ -49,6 +50,7 @@ export const attendanceService = {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
+                timeout: 30000, // Increase timeout for file upload
             });
             
             console.log('Attendance response:', response.data);
@@ -56,12 +58,16 @@ export const attendanceService = {
         } catch (error: unknown) {
             const apiError = error as ApiError;
             console.error('Attendance marking error:', apiError);
-            console.error('Error response:', apiError.response?.data);
+            console.error('Full error object:', {
+                message: apiError.message,
+                response: apiError.response,
+                stack: apiError.stack
+            });
             
             if (apiError.response?.data?.detail) {
                 throw new Error(apiError.response.data.detail);
             }
-            throw new Error(apiError.message || 'Failed to mark attendance');
+            throw apiError; // Throw the original error to preserve the error chain
         }
     }
 };

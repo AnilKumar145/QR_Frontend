@@ -2,11 +2,10 @@ import axios from 'axios';
 
 export const api = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
+    timeout: 15000, // Increase timeout to 15 seconds
     headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
-    },
-    withCredentials: false,  // Change this to false if you don't need credentials
+    }
 });
 
 // Enhanced error handling
@@ -23,8 +22,13 @@ api.interceptors.response.use(
         
         console.error('API Error Details:', errorDetails);
         
+        if (error.code === 'ECONNABORTED') {
+            throw new Error('Request timeout - Server took too long to respond');
+        }
+        
         if (!error.response) {
-            throw new Error('Network error - Please check your connection');
+            console.error('Network Error Details:', error);
+            throw new Error('Network error - Please check if the backend server is running and accessible');
         }
         
         if (error.response.status === 422) {
@@ -32,7 +36,7 @@ api.interceptors.response.use(
         }
         
         if (error.response.status === 404) {
-            throw new Error('Resource not found');
+            throw new Error('API endpoint not found - Please check the API URL');
         }
 
         if (error.response.status === 500) {
