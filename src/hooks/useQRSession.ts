@@ -12,20 +12,24 @@ export const useQRSession = () => {
         try {
             const newSession = await qrService.getCurrentSession();
             setSession(newSession);
+            return true; // Indicate successful fetch
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to fetch QR session');
+            return false; // Indicate failed fetch
         } finally {
             setLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        fetchNewSession();
-        
-        // Set up auto-refresh interval (every 2 minutes)
-        const intervalId = setInterval(fetchNewSession, 120000);
-        
-        return () => clearInterval(intervalId);
+        // Initial fetch
+        fetchNewSession().then(success => {
+            if (success) {
+                // Only start interval if initial fetch was successful
+                const intervalId = setInterval(fetchNewSession, 120000);
+                return () => clearInterval(intervalId);
+            }
+        });
     }, [fetchNewSession]);
 
     // Calculate remaining time
@@ -47,3 +51,4 @@ export const useQRSession = () => {
         refreshSession: fetchNewSession
     };
 };
+

@@ -18,6 +18,20 @@ export interface AttendanceResponse {
     message: string;
 }
 
+interface LocationValidationResponse {
+    is_valid: boolean;
+    distance_meters: number;
+    max_allowed_distance_meters: number;
+    your_coordinates: {
+        lat: number;
+        lon: number;
+    };
+    institution_coordinates: {
+        lat: number;
+        lon: number;
+    };
+}
+
 interface ApiError extends Error {
     response?: {
         data?: {
@@ -33,41 +47,51 @@ export const attendanceService = {
         // Add all fields to FormData
         Object.entries(data).forEach(([key, value]) => {
             if (key === 'selfie') {
-                formData.append('selfie', value);
+                formData.append('selfie', value as File);
+            } else if (key === 'location_lat' || key === 'location_lon') {
+                // Ensure coordinates are sent as numbers
+                formData.append(key, value.toString());
+                console.log(`Sending ${key}:`, value, typeof value);
             } else {
                 formData.append(key, String(value));
             }
         });
 
         try {
-            console.log('Attempting to connect to:', import.meta.env.VITE_API_BASE_URL);
-            console.log('Sending attendance data:', {
-                ...data,
-                selfie: 'File object' // Don't log the actual file
+            console.log('Sending attendance data with coordinates:', {
+                lat: data.location_lat,
+                lon: data.location_lon
             });
-            
+
             const response = await api.post('/attendance/mark', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
-                timeout: 30000, // Increase timeout for file upload
+                timeout: 60000,
             });
             
-            console.log('Attendance response:', response.data);
             return response.data;
         } catch (error: unknown) {
             const apiError = error as ApiError;
             console.error('Attendance marking error:', apiError);
-            console.error('Full error object:', {
-                message: apiError.message,
-                response: apiError.response,
-                stack: apiError.stack
-            });
             
             if (apiError.response?.data?.detail) {
                 throw new Error(apiError.response.data.detail);
             }
-            throw apiError; // Throw the original error to preserve the error chain
+            throw new Error('Network error - Please check if the backend server is running and accessible');
+        }
+    },
+
+    async validateLocation(lat: number, lon: number): Promise<LocationValidationResponse> {
+        try {
+            const response = await api.get(`/utils/location/validate`, {
+                params: { lat, lon }
+            });
+            return response.data;
+        } catch (error: unknown) {
+            const apiError = error as ApiError;
+            console.error('Location validation error:', apiError);
+            throw new Error(apiError.response?.data?.detail || 'Failed to validate location');
         }
     }
 };

@@ -7,8 +7,7 @@ import {
     CardContent,
     Typography,
     Alert,
-    CircularProgress,
-    Grid
+    CircularProgress
 } from '@mui/material';
 import { PhotoCamera } from '@mui/icons-material';
 import Webcam from 'react-webcam';
@@ -24,6 +23,38 @@ interface ApiError extends Error {
     };
 }
 
+interface LocationErrorDetail {
+    error: string;
+    message: string;
+    your_location: {
+        lat: number;
+        lon: number;
+    };
+    distance: number;
+    max_allowed_distance: number;
+}
+
+interface GeoLocation {
+    latitude: number;
+    longitude: number;
+    timestamp: number;
+    accuracy: number;
+}
+
+const validateLocation = async (location: GeoLocation) => {
+    try {
+        const response = await attendanceService.validateLocation(
+            location.latitude,
+            location.longitude
+        );
+        console.log('Location validation response:', response);
+        return response.is_valid;
+    } catch (error) {
+        console.error('Location validation failed:', error);
+        throw error;
+    }
+};
+
 export const AttendanceMarking: React.FC = () => {
     const { sessionId } = useParams();
     const [formData, setFormData] = useState({
@@ -37,7 +68,7 @@ export const AttendanceMarking: React.FC = () => {
     const [selfie, setSelfie] = useState<File | null>(null);
     const [showCamera, setShowCamera] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | React.ReactNode | null>(null);
     const [success, setSuccess] = useState(false);
 
     const webcamRef = useRef<Webcam>(null);
@@ -78,43 +109,101 @@ export const AttendanceMarking: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!location || !selfie || !sessionId) {
-            setError('Please ensure location access is granted and selfie is taken');
+        setError(null);
+        setLoading(true);
+
+        if (!location) {
+            setError("Location data is not available. Please enable location services.");
+            setLoading(false);
             return;
         }
 
-        setLoading(true);
-        setError(null);
-
         try {
-            // Add detailed logging
-            console.log('Location data:', location);
-            console.log('Session ID:', sessionId);
-            console.log('Form data:', formData);
+            // Enhanced location validation
+            if (!location) {
+                setError('Location data is not available. Please ensure location services are enabled.');
+                return;
+            }
 
-            const response = await attendanceService.markAttendance({
-                session_id: sessionId,
-                ...formData,
-                location_lat: location.latitude,
-                location_lon: location.longitude,
-                selfie: selfie,
-            });
+            // Pre-validate location before form submission
+            const isLocationValid = await validateLocation(location);
+            if (!isLocationValid) {
+                setError('Your location is outside the allowed attendance area. Please ensure you are within campus boundaries.');
+                return;
+            }
 
-            console.log('Attendance response:', response);
-            setSuccess(true);
-        } catch (err: unknown) {
-            // Type guard to ensure error is of type ApiError
-            const error = err as ApiError;
-            
-            // More detailed error logging
-            console.error('Form submission error:', error);
-            console.error('Error response:', error.response?.data);
-            
-            // Show more specific error message
-            const errorMessage = error.response?.data?.detail || error.message || 'Failed to mark attendance';
-            setError(errorMessage);
-        } finally {
-            setLoading(false);
+            if (!selfie) {
+                setError('Please take a selfie before submitting.');
+                return;
+            }
+
+            if (!sessionId) {
+                setError('Invalid session. Please scan the QR code again.');
+                return;
+            }
+
+            setLoading(true);
+            setError(null);
+
+            try {
+                // Log submission data
+                console.log('Submitting attendance:', {
+                    location: {
+                        lat: location.latitude,
+                        lon: location.longitude,
+                        accuracy: location.accuracy,
+                        timestamp: new Date(location.timestamp).toISOString()
+                    },
+                    sessionId,
+                    formData
+                });
+
+                const response = await attendanceService.markAttendance({
+                    session_id: sessionId,
+                    ...formData,
+                    location_lat: Number(location.latitude),
+                    location_lon: Number(location.longitude),
+                    selfie: selfie,
+                });
+
+                console.log('Attendance response:', response);
+                setSuccess(true);
+            } catch (err: unknown) {
+                const error = err as ApiError;
+                console.error('Attendance submission error:', error);
+
+                // Handle the detailed location error response
+                if (error.response?.data?.detail && typeof error.response.data.detail === 'object') {
+                    const detail = error.response.data.detail as LocationErrorDetail;
+                    if (detail.error === "Location out of range") {
+                        setError(
+                            <div>
+                                <strong>{detail.error}</strong>
+                                <p>{detail.message}</p>
+                                <small>
+                                    Your location: {detail.your_location.lat}, {detail.your_location.lon}
+                                    <br />
+                                    Distance from campus: {detail.distance} meters
+                                    <br />
+                                    Maximum allowed distance: {detail.max_allowed_distance} meters
+                                </small>
+                            </div>
+                        );
+                    }
+                } else {
+                    // Handle other types of errors
+                    setError(
+                        error.response?.data?.detail || 
+                        error.message || 
+                        'Failed to submit attendance'
+                    );
+                }
+            } finally {
+                setLoading(false);
+            }
+        } catch (error) {
+            console.error('Location validation failed:', error);
+            setError('Location validation failed. Please try again.');
         }
     };
 
@@ -127,39 +216,100 @@ export const AttendanceMarking: React.FC = () => {
     }
 
     return (
-        <Card sx={{ maxWidth: 600, margin: 'auto', mt: 4 }}>
-            <CardContent>
-                <Typography variant="h5" gutterBottom>
+        <Card 
+            sx={{ 
+                maxWidth: { xs: '95%', sm: 600 },
+                margin: 'auto',
+                mt: 4,
+                borderRadius: 2,
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                background: 'linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%)',
+            }}
+        >
+            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <Typography 
+                    variant="h5" 
+                    gutterBottom
+                    sx={{
+                        fontWeight: 600,
+                        color: 'primary.main',
+                        textAlign: 'center',
+                        mb: 3
+                    }}
+                >
                     Mark Attendance
                 </Typography>
 
-                {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-                {locationError && <Alert severity="error" sx={{ mb: 2 }}>{locationError}</Alert>}
+                {error && (
+                    <Alert 
+                        severity="error" 
+                        sx={{ 
+                            mb: 3,
+                            animation: 'fadeIn 0.5s ease-in'
+                        }}
+                    >
+                        {error}
+                    </Alert>
+                )}
 
-                <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Grid container spacing={2}>
-                        <Grid component="div" sx={{ gridColumn: 'span 12' }}>
-                            <TextField
-                                fullWidth
-                                label="Name"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleInputChange}
-                                required
-                            />
-                        </Grid>
-                        <Grid component="div" sx={{ gridColumn: 'span 12' }}>
-                            <TextField
-                                fullWidth
-                                label="Email"
-                                name="email"
-                                type="email"
-                                value={formData.email}
-                                onChange={handleInputChange}
-                                required
-                            />
-                        </Grid>
-                        <Grid component="div" sx={{ gridColumn: { xs: 'span 12', sm: 'span 6' } }}>
+                {locationError && (
+                    <Alert 
+                        severity="error" 
+                        sx={{ 
+                            mb: 3,
+                            animation: 'fadeIn 0.5s ease-in'
+                        }}
+                    >
+                        {locationError}
+                    </Alert>
+                )}
+
+                <Box 
+                    component="form" 
+                    onSubmit={handleSubmit} 
+                    sx={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        gap: 3 
+                    }}
+                >
+                    <Box sx={{ 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        gap: 2
+                    }}>
+                        <TextField
+                            fullWidth
+                            label="Name"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleInputChange}
+                            required
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 1,
+                                }
+                            }}
+                        />
+                        <TextField
+                            fullWidth
+                            label="Email"
+                            name="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            required
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 1,
+                                }
+                            }}
+                        />
+                        <Box sx={{ 
+                            display: 'flex', 
+                            gap: 2,
+                            flexDirection: { xs: 'column', sm: 'row' }
+                        }}>
                             <TextField
                                 fullWidth
                                 label="Roll Number"
@@ -167,9 +317,12 @@ export const AttendanceMarking: React.FC = () => {
                                 value={formData.roll_no}
                                 onChange={handleInputChange}
                                 required
+                                sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                        borderRadius: 1,
+                                    }
+                                }}
                             />
-                        </Grid>
-                        <Grid component="div" sx={{ gridColumn: { xs: 'span 12', sm: 'span 6' } }}>
                             <TextField
                                 fullWidth
                                 label="Phone"
@@ -177,9 +330,18 @@ export const AttendanceMarking: React.FC = () => {
                                 value={formData.phone}
                                 onChange={handleInputChange}
                                 required
+                                sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                        borderRadius: 1,
+                                    }
+                                }}
                             />
-                        </Grid>
-                        <Grid component="div" sx={{ gridColumn: { xs: 'span 12', sm: 'span 6' } }}>
+                        </Box>
+                        <Box sx={{ 
+                            display: 'flex', 
+                            gap: 2,
+                            flexDirection: { xs: 'column', sm: 'row' }
+                        }}>
                             <TextField
                                 fullWidth
                                 label="Branch"
@@ -187,9 +349,12 @@ export const AttendanceMarking: React.FC = () => {
                                 value={formData.branch}
                                 onChange={handleInputChange}
                                 required
+                                sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                        borderRadius: 1,
+                                    }
+                                }}
                             />
-                        </Grid>
-                        <Grid component="div" sx={{ gridColumn: { xs: 'span 12', sm: 'span 6' } }}>
                             <TextField
                                 fullWidth
                                 label="Section"
@@ -197,38 +362,67 @@ export const AttendanceMarking: React.FC = () => {
                                 value={formData.section}
                                 onChange={handleInputChange}
                                 required
+                                sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                        borderRadius: 1,
+                                    }
+                                }}
                             />
-                        </Grid>
-                    </Grid>
+                        </Box>
+                    </Box>
 
-                    {showCamera ? (
-                        <Box sx={{ position: 'relative', width: '100%', height: 'auto' }}>
-                            <Webcam
-                                ref={webcamRef}
-                                audio={false}
-                                screenshotFormat="image/jpeg"
-                                width="100%"
-                                onUserMedia={() => setError(null)}
-                                onUserMediaError={() => setError('Camera access denied')}
-                            />
+                    <Box sx={{ mt: 2 }}>
+                        {showCamera ? (
+                            <Box 
+                                sx={{ 
+                                    position: 'relative',
+                                    width: '100%',
+                                    height: 'auto',
+                                    borderRadius: 2,
+                                    overflow: 'hidden',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                }}
+                            >
+                                <Webcam
+                                    ref={webcamRef}
+                                    audio={false}
+                                    screenshotFormat="image/jpeg"
+                                    width="100%"
+                                    onUserMedia={() => setError(null)}
+                                    onUserMediaError={() => setError('Camera access denied')}
+                                />
+                                <Button
+                                    variant="contained"
+                                    onClick={handleCaptureSelfie}
+                                    sx={{ 
+                                        position: 'absolute',
+                                        bottom: 16,
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        borderRadius: 5,
+                                        px: 4
+                                    }}
+                                >
+                                    Capture
+                                </Button>
+                            </Box>
+                        ) : (
                             <Button
                                 variant="contained"
-                                onClick={handleCaptureSelfie}
-                                sx={{ position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)' }}
+                                startIcon={<PhotoCamera />}
+                                onClick={() => setShowCamera(true)}
+                                fullWidth
+                                sx={{ 
+                                    py: 1.5,
+                                    borderRadius: 2,
+                                    background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                                    boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
+                                }}
                             >
-                                Capture
+                                {selfie ? 'Retake Selfie' : 'Take Selfie'}
                             </Button>
-                        </Box>
-                    ) : (
-                        <Button
-                            variant="contained"
-                            startIcon={<PhotoCamera />}
-                            onClick={() => setShowCamera(true)}
-                            fullWidth
-                        >
-                            {selfie ? 'Retake Selfie' : 'Take Selfie'}
-                        </Button>
-                    )}
+                        )}
+                    </Box>
 
                     <Button
                         type="submit"
@@ -236,6 +430,16 @@ export const AttendanceMarking: React.FC = () => {
                         color="primary"
                         disabled={loading || !location || !selfie || !sessionId}
                         fullWidth
+                        sx={{ 
+                            mt: 2,
+                            py: 1.5,
+                            borderRadius: 2,
+                            background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                            boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
+                            '&:disabled': {
+                                background: '#ccc',
+                            }
+                        }}
                     >
                         {loading ? <CircularProgress size={24} /> : 'Mark Attendance'}
                     </Button>
@@ -244,6 +448,20 @@ export const AttendanceMarking: React.FC = () => {
         </Card>
     );
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
