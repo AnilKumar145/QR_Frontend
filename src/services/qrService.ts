@@ -27,8 +27,10 @@ export const qrService = {
     async getCurrentSession(): Promise<QRSession> {
         try {
             console.log('Requesting new QR session...');
-            const response = await api.post('/qr-session/generate', {
-                duration_minutes: 2
+            const response = await api.post('/qr-session/generate', null, {
+                params: {
+                    duration_minutes: 2
+                }
             });
             
             console.log('QR Session Response:', response.data);
@@ -51,7 +53,7 @@ export const qrService = {
                 if (error.response.status === 422) {
                     throw new QRSessionError('Invalid request parameters');
                 }
-                throw new QRSessionError(error.response.data?.detail || error.response.data?.message || 'Server error occurred');
+                throw new QRSessionError(error.response.data?.detail || 'Server error occurred');
             }
             throw new QRSessionError('An unexpected error occurred. Please try again.');
         }
