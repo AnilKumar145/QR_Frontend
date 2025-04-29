@@ -13,7 +13,7 @@ const AdminLogin: React.FC = () => {
     e.preventDefault();
     setError('');
     try {
-      // Use URLSearchParams to send form-urlencoded data as backend expects OAuth2PasswordRequestForm
+      // Prepare form-urlencoded data as backend expects OAuth2PasswordRequestForm
       const params = new URLSearchParams();
       params.append('username', username);
       params.append('password', password);
