@@ -161,8 +161,8 @@ export const AttendanceMarking: React.FC = () => {
                 const response = await attendanceService.markAttendance({
                     session_id: sessionId,
                     ...formData,
-                    location_lat: Number(location.latitude),
-                    location_lon: Number(location.longitude),
+                    location_lat: Number(location.latitude.toFixed(6)),
+                    location_lon: Number(location.longitude.toFixed(6)),
                     selfie: selfie,
                 });
 
@@ -448,25 +448,3 @@ export const AttendanceMarking: React.FC = () => {
         </Card>
     );
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
