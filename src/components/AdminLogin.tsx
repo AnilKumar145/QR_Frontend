@@ -13,10 +13,17 @@ const AdminLogin: React.FC = () => {
     e.preventDefault();
     setError('');
     try {
-      const response = await axios.post('/api/v1/admin/login', {
-        username,
-        password,
+      // Use URLSearchParams to send form-urlencoded data as backend expects OAuth2PasswordRequestForm
+      const params = new URLSearchParams();
+      params.append('username', username);
+      params.append('password', password);
+
+      const response = await axios.post('/api/v1/admin/login', params, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
       });
+
       const token = response.data.access_token;
       localStorage.setItem('adminToken', token);
       navigate('/admin/dashboard');
