@@ -1,12 +1,27 @@
 import axios from 'axios';
 
+// Use the full backend URL
+const API_BASE_URL = 'https://qr-backend-1-pq5i.onrender.com/api/v1';
+
 export const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL,
+    baseURL: API_BASE_URL,
     timeout: 15000, // Increase timeout to 15 seconds
     headers: {
         'Content-Type': 'application/json',
     }
 });
+
+// Add interceptor to include auth token for authenticated requests
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('adminToken');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
 
 // Enhanced error handling
 api.interceptors.response.use(

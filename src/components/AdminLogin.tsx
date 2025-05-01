@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, TextField, Typography, Alert, Container, Paper } from '@mui/material';
+import { AuthContext } from '../contexts/AuthContext';
 
 const AdminLogin: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,14 +20,15 @@ const AdminLogin: React.FC = () => {
       params.append('username', username);
       params.append('password', password);
 
-      const response = await axios.post('/api/v1/admin/login', params, {
+      // Use the full backend URL instead of relative path
+      const response = await axios.post('https://qr-backend-1-pq5i.onrender.com/api/v1/admin/login', params, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       });
 
       const token = response.data.access_token;
-      localStorage.setItem('adminToken', token);
+      login(token); // Use context login to set token
       navigate('/admin/dashboard');
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response?.data?.detail) {

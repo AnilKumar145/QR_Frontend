@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, ReactNode } from 'react';
 import {
     Box,
     Button,
@@ -18,7 +18,7 @@ import { useParams } from 'react-router-dom';
 interface ApiError extends Error {
     response?: {
         data?: {
-            detail?: string;
+            detail?: string | object;
         };
     };
 }
@@ -55,6 +55,17 @@ const validateLocation = async (location: GeoLocation) => {
     }
 };
 
+const validateEmail = (email: string) => {
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return re.test(email);
+};
+
+const validatePhone = (phone: string) => {
+    // Accepts 10 digits, optionally with spaces, dashes or parentheses
+    const re = /^(\+91[\s-]?)?[0]?(91)?[789]\d{9}$/;
+    return re.test(phone.replace(/[\s()-]/g, ''));
+};
+
 export const AttendanceMarking: React.FC = () => {
     const { sessionId } = useParams();
     const [formData, setFormData] = useState({
@@ -68,13 +79,12 @@ export const AttendanceMarking: React.FC = () => {
     const [selfie, setSelfie] = useState<File | null>(null);
     const [showCamera, setShowCamera] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | React.ReactNode | null>(null);
+    const [error, setError] = useState<string | ReactNode | null>(null);
     const [success, setSuccess] = useState(false);
 
     const webcamRef = useRef<Webcam>(null);
-    const { location, error: locationError } = useGeolocation();
+    const { location } = useGeolocation();
 
-    // Request location permission immediately when component mounts
     useEffect(() => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -112,98 +122,111 @@ export const AttendanceMarking: React.FC = () => {
         setError(null);
         setLoading(true);
 
+        // Enhanced form validations
+        if (!formData.name.trim()) {
+            setError('Name is required.');
+            setLoading(false);
+            return;
+        }
+        if (!validateEmail(formData.email)) {
+            setError('Please enter a valid email address (e.g., student@example.com).');
+            setLoading(false);
+            return;
+        }
+        if (!formData.roll_no.trim()) {
+            setError('Roll number is required.');
+            setLoading(false);
+            return;
+        }
+        if (!validatePhone(formData.phone)) {
+            setError('Please enter a valid 10-digit phone number.');
+            setLoading(false);
+            return;
+        }
+        if (!formData.branch.trim()) {
+            setError('Branch is required.');
+            setLoading(false);
+            return;
+        }
+        if (!formData.section.trim()) {
+            setError('Section is required.');
+            setLoading(false);
+            return;
+        }
+
         if (!location) {
-            setError("Location data is not available. Please enable location services.");
+            setError("Location data is not available. Please enable location services and refresh the page.");
             setLoading(false);
             return;
         }
 
         try {
-            // Enhanced location validation
-            if (!location) {
-                setError('Location data is not available. Please ensure location services are enabled.');
-                return;
-            }
-
             // Pre-validate location before form submission
             const isLocationValid = await validateLocation(location);
             if (!isLocationValid) {
-                setError('Your location is outside the allowed attendance area. Please ensure you are within campus boundaries.');
+                setError(
+                    <div>
+                        <strong>Location validation failed</strong>
+                        <p>You appear to be far from the institution campus in Vijayawada.</p>
+                        <p>Attendance can only be marked when you are physically present on campus.</p>
+                    </div>
+                );
+                setLoading(false);
                 return;
             }
 
             if (!selfie) {
                 setError('Please take a selfie before submitting.');
+                setLoading(false);
                 return;
             }
 
             if (!sessionId) {
                 setError('Invalid session. Please scan the QR code again.');
+                setLoading(false);
                 return;
             }
 
-            setLoading(true);
-            setError(null);
+            await attendanceService.markAttendance({
+                session_id: sessionId,
+                ...formData,
+                location_lat: Number(location.latitude.toFixed(6)),
+                location_lon: Number(location.longitude.toFixed(6)),
+                selfie: selfie,
+            });
 
-            try {
-                // Log submission data
-                console.log('Submitting attendance:', {
-                    location: {
-                        lat: location.latitude,
-                        lon: location.longitude,
-                        accuracy: location.accuracy,
-                        timestamp: new Date(location.timestamp).toISOString()
-                    },
-                    sessionId,
-                    formData
-                });
+            setSuccess(true);
+        } catch (err: unknown) {
+            const error = err as ApiError;
+            console.error('Attendance submission error:', error);
 
-                const response = await attendanceService.markAttendance({
-                    session_id: sessionId,
-                    ...formData,
-                    location_lat: Number(location.latitude.toFixed(6)),
-                    location_lon: Number(location.longitude.toFixed(6)),
-                    selfie: selfie,
-                });
-
-                console.log('Attendance response:', response);
-                setSuccess(true);
-            } catch (err: unknown) {
-                const error = err as ApiError;
-                console.error('Attendance submission error:', error);
-
-                // Handle the detailed location error response
-                if (error.response?.data?.detail && typeof error.response.data.detail === 'object') {
-                    const detail = error.response.data.detail as LocationErrorDetail;
-                    if (detail.error === "Location out of range") {
-                        setError(
-                            <div>
-                                <strong>{detail.error}</strong>
-                                <p>{detail.message}</p>
-                                <small>
-                                    Your location: {detail.your_location.lat}, {detail.your_location.lon}
-                                    <br />
-                                    Distance from campus: {detail.distance} meters
-                                    <br />
-                                    Maximum allowed distance: {detail.max_allowed_distance} meters
-                                </small>
-                            </div>
-                        );
-                    }
-                } else {
-                    // Handle other types of errors
+            if (error.response?.data?.detail && typeof error.response.data.detail === 'object') {
+                const detail = error.response.data.detail as LocationErrorDetail;
+                if (detail.error === "Location out of range") {
                     setError(
-                        error.response?.data?.detail || 
-                        error.message || 
-                        'Failed to submit attendance'
+                        <div>
+                            <strong>You are too far from campus</strong>
+                            <p>{detail.message}</p>
+                            <p>Attendance can only be marked when you are physically present on the Vijayawada campus.</p>
+                            <small>
+                                Your location: {detail.your_location.lat.toFixed(4)}, {detail.your_location.lon.toFixed(4)}
+                                <br />
+                                Distance from campus: {detail.distance.toLocaleString()} meters
+                                <br />
+                                Maximum allowed distance: {detail.max_allowed_distance.toLocaleString()} meters
+                            </small>
+                        </div>
                     );
                 }
-            } finally {
-                setLoading(false);
+            } else {
+                setError(
+                    typeof error.response?.data?.detail === 'string' ? error.response.data.detail :
+                    error.message || 
+                    'Failed to submit attendance. Please ensure you are on campus in Vijayawada.'
+                );
             }
-        } catch (error) {
-            console.error('Location validation failed:', error);
-            setError('Location validation failed. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -249,18 +272,6 @@ export const AttendanceMarking: React.FC = () => {
                         }}
                     >
                         {error}
-                    </Alert>
-                )}
-
-                {locationError && (
-                    <Alert 
-                        severity="error" 
-                        sx={{ 
-                            mb: 3,
-                            animation: 'fadeIn 0.5s ease-in'
-                        }}
-                    >
-                        {locationError}
                     </Alert>
                 )}
 
@@ -389,8 +400,23 @@ export const AttendanceMarking: React.FC = () => {
                                     screenshotFormat="image/jpeg"
                                     width="100%"
                                     onUserMedia={() => setError(null)}
-                                    onUserMediaError={() => setError('Camera access denied')}
+                                    onUserMediaError={() => setError('Camera access denied. Please allow camera access in your browser settings.')}
                                 />
+                                <Typography 
+                                    variant="caption" 
+                                    sx={{ 
+                                        position: 'absolute', 
+                                        top: 8, 
+                                        left: 0, 
+                                        right: 0, 
+                                        textAlign: 'center',
+                                        color: 'white',
+                                        backgroundColor: 'rgba(0,0,0,0.5)',
+                                        padding: '4px'
+                                    }}
+                                >
+                                    Please look at the camera and ensure your face is clearly visible
+                                </Typography>
                                 <Button
                                     variant="contained"
                                     onClick={handleCaptureSelfie}
@@ -448,3 +474,8 @@ export const AttendanceMarking: React.FC = () => {
         </Card>
     );
 };
+
+
+
+
+
