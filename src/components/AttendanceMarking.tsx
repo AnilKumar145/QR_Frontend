@@ -61,9 +61,9 @@ const validateEmail = (email: string) => {
 };
 
 const validatePhone = (phone: string) => {
-    // Accepts 10 digits, optionally with spaces, dashes or parentheses
-    const re = /^(\+91[\s-]?)?[0]?(91)?[789]\d{9}$/;
-    return re.test(phone.replace(/[\s()-]/g, ''));
+    // Check if phone is a valid 10-digit number
+    const re = /^[0-9]{10}$/;
+    return re.test(phone);
 };
 
 export const AttendanceMarking: React.FC = () => {
@@ -122,55 +122,41 @@ export const AttendanceMarking: React.FC = () => {
         setError(null);
         setLoading(true);
 
-        // Enhanced form validations
-        if (!formData.name.trim()) {
-            setError('Name is required.');
-            setLoading(false);
-            return;
-        }
-        if (!validateEmail(formData.email)) {
-            setError('Please enter a valid email address (e.g., student@example.com).');
-            setLoading(false);
-            return;
-        }
-        if (!formData.roll_no.trim()) {
-            setError('Roll number is required.');
-            setLoading(false);
-            return;
-        }
-        if (!validatePhone(formData.phone)) {
-            setError('Please enter a valid 10-digit phone number.');
-            setLoading(false);
-            return;
-        }
-        if (!formData.branch.trim()) {
-            setError('Branch is required.');
-            setLoading(false);
-            return;
-        }
-        if (!formData.section.trim()) {
-            setError('Section is required.');
-            setLoading(false);
-            return;
-        }
-
-        if (!location) {
-            setError("Location data is not available. Please enable location services and refresh the page.");
-            setLoading(false);
-            return;
-        }
-
         try {
-            // Pre-validate location before form submission
-            const isLocationValid = await validateLocation(location);
-            if (!isLocationValid) {
-                setError(
-                    <div>
-                        <strong>Location validation failed</strong>
-                        <p>You appear to be far from the institution campus in Vijayawada.</p>
-                        <p>Attendance can only be marked when you are physically present on campus.</p>
-                    </div>
-                );
+            // Enhanced form validations
+            if (!formData.name.trim()) {
+                setError('Name is required.');
+                setLoading(false);
+                return;
+            }
+            if (!validateEmail(formData.email)) {
+                setError('Please enter a valid email address (e.g., student@example.com).');
+                setLoading(false);
+                return;
+            }
+            if (!formData.roll_no.trim()) {
+                setError('Roll number is required.');
+                setLoading(false);
+                return;
+            }
+            if (!validatePhone(formData.phone)) {
+                setError('Please enter a valid 10-digit phone number.');
+                setLoading(false);
+                return;
+            }
+            if (!formData.branch.trim()) {
+                setError('Branch is required.');
+                setLoading(false);
+                return;
+            }
+            if (!formData.section.trim()) {
+                setError('Section is required.');
+                setLoading(false);
+                return;
+            }
+
+            if (!location) {
+                setError("Location data is not available. Please enable location services and refresh the page.");
                 setLoading(false);
                 return;
             }
@@ -187,6 +173,30 @@ export const AttendanceMarking: React.FC = () => {
                 return;
             }
 
+            // Log the data being sent to help debug
+            console.log('Submitting attendance with data:', {
+                session_id: sessionId,
+                ...formData,
+                location_lat: location ? Number(location.latitude.toFixed(6)) : null,
+                location_lon: location ? Number(location.longitude.toFixed(6)) : null,
+                selfie: selfie,
+            });
+
+            // Pre-validate location before form submission
+            const isLocationValid = await validateLocation(location);
+            if (!isLocationValid) {
+                setError(
+                    <div>
+                        <strong>Location validation failed</strong>
+                        <p>You appear to be far from the institution campus in Vijayawada.</p>
+                        <p>Attendance can only be marked when you are physically present on campus.</p>
+                    </div>
+                );
+                setLoading(false);
+                return;
+            }
+
+            // Submit the attendance
             await attendanceService.markAttendance({
                 session_id: sessionId,
                 ...formData,
@@ -464,6 +474,7 @@ export const AttendanceMarking: React.FC = () => {
                             boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
                             '&:disabled': {
                                 background: '#ccc',
+                                opacity: 0.7,
                             }
                         }}
                     >
@@ -474,6 +485,9 @@ export const AttendanceMarking: React.FC = () => {
         </Card>
     );
 };
+
+
+
 
 
 
