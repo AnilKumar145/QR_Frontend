@@ -129,12 +129,6 @@ const StudentSelfiesPage: React.FC = () => {
     }));
   };
 
-  // Extract filename from selfie_path
-  const getFilenameFromPath = (path: string) => {
-    if (!path) return '';
-    return path.split('/').pop() || '';
-  };
-
   if (loading) {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
@@ -311,7 +305,7 @@ const StudentSelfiesPage: React.FC = () => {
                   <CardMedia
                     component="img"
                     height="200"
-                    image={`https://qr-backend-1-pq5i.onrender.com/api/v1/utils/selfie/${getFilenameFromPath(selfie.selfie_path)}`}
+                    image={`https://qr-backend-1-pq5i.onrender.com/${selfie.selfie_path}`}
                     alt={`${selfie.name}'s selfie`}
                     sx={{ 
                       objectFit: 'cover',
@@ -381,6 +375,14 @@ const StudentSelfiesPage: React.FC = () => {
 };
 
 export default StudentSelfiesPage;
+
+
+
+
+
+
+
+
 
 
 
