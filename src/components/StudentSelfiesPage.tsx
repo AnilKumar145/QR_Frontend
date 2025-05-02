@@ -84,6 +84,10 @@ const StudentSelfiesPage: React.FC = () => {
         setImageLoading(initialLoadingState);
         setSelfies(selfiesData);
         setFilteredSelfies(selfiesData);
+        
+        // Log selfie paths for debugging
+        console.log("Selfie paths:", selfiesData.map(s => s.selfie_path));
+        
         setError('');
       } catch (err) {
         const axiosError = err as AxiosError<ErrorResponse>;
@@ -305,7 +309,7 @@ const StudentSelfiesPage: React.FC = () => {
                   <CardMedia
                     component="img"
                     height="200"
-                    image={`https://qr-backend-1-pq5i.onrender.com/${selfie.selfie_path}`}
+                    image={`https://qr-backend-1-pq5i.onrender.com/api/v1/utils/selfie/${selfie.selfie_path.split('/').pop()}`}
                     alt={`${selfie.name}'s selfie`}
                     sx={{ 
                       objectFit: 'cover',
@@ -313,6 +317,7 @@ const StudentSelfiesPage: React.FC = () => {
                     }}
                     onLoad={() => handleImageLoad(selfie.id)}
                     onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                      console.error(`Failed to load image: ${selfie.selfie_path}`);
                       handleImageLoad(selfie.id);
                       const target = e.currentTarget;
                       target.onerror = null;
@@ -375,6 +380,9 @@ const StudentSelfiesPage: React.FC = () => {
 };
 
 export default StudentSelfiesPage;
+
+
+
 
 
 
