@@ -59,6 +59,42 @@ const StudentSelfiesPage: React.FC = () => {
   const [error, setError] = useState('');
   const [imageLoading, setImageLoading] = useState<{[key: number]: boolean}>({});
 
+  // Add a function to generate a placeholder image based on student name
+  const getInitialsPlaceholder = (name: string) => {
+    const initials = name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+    
+    // Generate a consistent color based on the name
+    const colors = [
+      '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6', 
+      '#1abc9c', '#d35400', '#c0392b', '#16a085', '#8e44ad'
+    ];
+    const colorIndex = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length;
+    const bgColor = colors[colorIndex];
+    
+    return `https://ui-avatars.com/api/?name=${initials}&background=${bgColor.substring(1)}&color=fff&size=200&font-size=0.5`;
+  };
+
+  // Function to determine the correct image source
+  const getImageSource = (selfie: AttendanceRecord) => {
+    // Check if the selfie_path is a Cloudinary URL
+    if (selfie.selfie_path?.startsWith('http')) {
+      return selfie.selfie_path;
+    }
+    
+    // Try the backend static path for older records
+    if (selfie.selfie_path?.startsWith('static/')) {
+      return `https://qr-backend-1-pq5i.onrender.com/${selfie.selfie_path}`;
+    }
+    
+    // Fallback to placeholder
+    return getInitialsPlaceholder(selfie.name);
+  };
+
   useEffect(() => {
     if (!token) {
       navigate('/admin/login');
@@ -309,7 +345,7 @@ const StudentSelfiesPage: React.FC = () => {
                   <CardMedia
                     component="img"
                     height="200"
-                    image={`https://qr-backend-1-pq5i.onrender.com/api/v1/utils/selfie/${selfie.selfie_path.split('/').pop()}`}
+                    image={getImageSource(selfie)}
                     alt={`${selfie.name}'s selfie`}
                     sx={{ 
                       objectFit: 'cover',
@@ -317,11 +353,10 @@ const StudentSelfiesPage: React.FC = () => {
                     }}
                     onLoad={() => handleImageLoad(selfie.id)}
                     onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                      console.error(`Failed to load image: ${selfie.selfie_path}`);
                       handleImageLoad(selfie.id);
                       const target = e.currentTarget;
                       target.onerror = null;
-                      target.src = 'https://via.placeholder.com/200x200?text=No+Image';
+                      target.src = getInitialsPlaceholder(selfie.name);
                     }}
                   />
                   <Chip
@@ -380,6 +415,15 @@ const StudentSelfiesPage: React.FC = () => {
 };
 
 export default StudentSelfiesPage;
+
+
+
+
+
+
+
+
+
 
 
 
