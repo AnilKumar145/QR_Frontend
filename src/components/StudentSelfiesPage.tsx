@@ -81,12 +81,16 @@ const StudentSelfiesPage: React.FC = () => {
 
   // Function to determine the correct image source
   const getImageSource = (selfie: AttendanceRecord) => {
-    // Check if the selfie_path is a Cloudinary URL
+    // First try the new database endpoint
+    if (selfie.id) {
+      return `https://qr-backend-1-pq5i.onrender.com/api/v1/attendance/selfie/${selfie.id}`;
+    }
+    
+    // Fallback to the old methods
     if (selfie.selfie_path?.startsWith('http')) {
       return selfie.selfie_path;
     }
     
-    // Try the backend static path for older records
     if (selfie.selfie_path?.startsWith('static/')) {
       return `https://qr-backend-1-pq5i.onrender.com/${selfie.selfie_path}`;
     }
@@ -415,6 +419,8 @@ const StudentSelfiesPage: React.FC = () => {
 };
 
 export default StudentSelfiesPage;
+
+
 
 
 
