@@ -3,37 +3,27 @@ import axios from 'axios';
 import { AuthContext } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Typography,
-  Alert,
-  Container,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  CircularProgress,
-  Card,
-  CardContent,
-  Divider,
-  AppBar,
-  Toolbar,
+  Box, 
+  Typography, 
+  Alert, 
+  Container, 
+  CircularProgress, 
+  Card, 
+  CardContent, 
+  AppBar, 
+  Toolbar, 
   IconButton,
-  Avatar,
-  Chip,
-  useTheme
+  Avatar
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PeopleIcon from '@mui/icons-material/People';
-import WarningIcon from '@mui/icons-material/Warning';
-import SchoolIcon from '@mui/icons-material/School';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import LocationOffIcon from '@mui/icons-material/LocationOff';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import PieChartIcon from '@mui/icons-material/PieChart';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 
 interface AttendanceRecord {
   id: number;
@@ -54,6 +44,19 @@ interface FlaggedLog {
   timestamp: string;
 }
 
+interface DailyStats {
+  [date: string]: number;
+}
+
+interface SummaryStats {
+  total_attendance: number;
+  valid_locations: number;
+  invalid_locations: number;
+  unique_students: number;
+  today_attendance: number;
+  flagged_logs: number;
+}
+
 const AdminDashboard: React.FC = () => {
   const { token, logout } = useContext(AuthContext);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
@@ -62,9 +65,38 @@ const AdminDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
-  const theme = useTheme();
   
-  // Remove the unused variables and just use the theme.breakpoints directly in the JSX
+  // Add state for statistics with proper types
+  const [dailyStats, setDailyStats] = useState<DailyStats | null>(null);
+  const [summaryStats, setSummaryStats] = useState<SummaryStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+
+  // Add function to fetch statistics
+  const fetchStatistics = React.useCallback(async () => {
+    if (!token) return;
+    
+    try {
+      setStatsLoading(true);
+      
+      // Fetch daily statistics
+      const dailyRes = await axios.get<DailyStats>('https://qr-backend-1-pq5i.onrender.com/api/v1/admin/statistics/daily', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setDailyStats(dailyRes.data);
+      
+      // Fetch summary statistics
+      const summaryRes = await axios.get<SummaryStats>('https://qr-backend-1-pq5i.onrender.com/api/v1/admin/statistics/summary', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSummaryStats(summaryRes.data);
+      
+    } catch (err) {
+      const error = err as { response?: { data?: { detail?: string } } };
+      console.error("Error fetching statistics:", error);
+    } finally {
+      setStatsLoading(false);
+    }
+  }, [token]);
 
   useEffect(() => {
     if (!token) {
@@ -83,9 +115,13 @@ const AdminDashboard: React.FC = () => {
         const flaggedRes = await axios.get('https://qr-backend-1-pq5i.onrender.com/api/v1/admin/flagged-logs', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setFlaggedLogs(flaggedRes.data);
+        setFlaggedLogs(flaggedRes.data.flagged_logs || flaggedRes.data);
+        
+        // Fetch statistics
+        await fetchStatistics();
+        
         setError('');
-      } catch (err: unknown) {
+      } catch (err) {
         const error = err as { response?: { data?: { detail?: string } } };
         setError(error.response?.data?.detail || 'Failed to fetch data');
       } finally {
@@ -94,7 +130,7 @@ const AdminDashboard: React.FC = () => {
     };
 
     fetchData();
-  }, [token, navigate]);
+  }, [token, navigate, fetchStatistics]);
 
   const handleRefresh = async () => {
     if (!token) return;
@@ -109,9 +145,13 @@ const AdminDashboard: React.FC = () => {
       const flaggedRes = await axios.get('https://qr-backend-1-pq5i.onrender.com/api/v1/admin/flagged-logs', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setFlaggedLogs(flaggedRes.data);
+      setFlaggedLogs(flaggedRes.data.flagged_logs || flaggedRes.data);
+      
+      // Refresh statistics
+      await fetchStatistics();
+      
       setError('');
-    } catch (err: unknown) {
+    } catch (err) {
       const error = err as { response?: { data?: { detail?: string } } };
       setError(error.response?.data?.detail || 'Failed to refresh data');
     } finally {
@@ -130,7 +170,7 @@ const AdminDashboard: React.FC = () => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-        <AppBar position="static" sx={{ backgroundColor: theme.palette.primary.main }}>
+        <AppBar position="static">
           <Toolbar>
             <DashboardIcon sx={{ mr: 2 }} />
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
@@ -151,7 +191,7 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <Box sx={{ flexGrow: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <AppBar position="static" sx={{ backgroundColor: theme.palette.primary.main }}>
+      <AppBar position="static">
         <Toolbar>
           <DashboardIcon sx={{ mr: 2 }} />
           <Typography 
@@ -225,7 +265,7 @@ const AdminDashboard: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Invalid Location Card */}
+          {/* Flagged Logs Card */}
           <Card 
             sx={{ 
               height: '100%', 
@@ -286,90 +326,112 @@ const AdminDashboard: React.FC = () => {
               </Typography>
             </CardContent>
           </Card>
-        </div>
 
-        {/* Attendance Records */}
-        <Paper sx={{ p: { xs: 1, sm: 2, md: 3 }, borderRadius: 2, mb: 3 }}>
-          <Box display="flex" alignItems="center" mb={2}>
-            <SchoolIcon sx={{ mr: 1, color: theme.palette.primary.main }} />
-            <Typography variant="h6">Attendance Records</Typography>
-          </Box>
-          <Divider sx={{ mb: 2 }} />
-          
-          <TableContainer sx={{ maxHeight: 400, overflowX: 'auto' }}>
-            <Table stickyHeader size="small" aria-label="attendance table">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>Email</TableCell>
-                  <TableCell>Roll No</TableCell>
-                  <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Branch</TableCell>
-                  <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Section</TableCell>
-                  <TableCell>Timestamp</TableCell>
-                  <TableCell>Location</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {attendance.map((record) => (
-                  <TableRow key={record.id} hover>
-                    <TableCell>{record.name}</TableCell>
-                    <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{record.email}</TableCell>
-                    <TableCell>{record.roll_no}</TableCell>
-                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{record.branch}</TableCell>
-                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{record.section}</TableCell>
-                    <TableCell>{new Date(record.timestamp).toLocaleString()}</TableCell>
-                    <TableCell>
-                      <Chip 
-                        icon={record.is_valid_location ? <LocationOnIcon /> : <LocationOffIcon />}
-                        label={record.is_valid_location ? "Valid" : "Invalid"}
-                        color={record.is_valid_location ? "success" : "error"}
-                        size="small"
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
-
-        {/* Flagged Logs */}
-        <Paper sx={{ p: { xs: 1, sm: 2, md: 3 }, borderRadius: 2 }}>
-          <Box display="flex" alignItems="center" mb={2}>
-            <WarningIcon sx={{ mr: 1, color: theme.palette.warning.main }} />
-            <Typography variant="h6">Flagged Logs</Typography>
-          </Box>
-          <Divider sx={{ mb: 2 }} />
-          
-          <TableContainer sx={{ maxHeight: 300, overflowX: 'auto' }}>
-            <Table stickyHeader size="small" aria-label="flagged logs table">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Session ID</TableCell>
-                  <TableCell>Reason</TableCell>
-                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>Details</TableCell>
-                  <TableCell>Timestamp</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {flaggedLogs.length > 0 ? (
-                  flaggedLogs.map((log) => (
-                    <TableRow key={log.id} hover>
-                      <TableCell>{log.session_id}</TableCell>
-                      <TableCell>{log.reason}</TableCell>
-                      <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{log.details}</TableCell>
-                      <TableCell>{new Date(log.timestamp).toLocaleString()}</TableCell>
-                    </TableRow>
-                  ))
+          {/* Daily Statistics Card */}
+          <Card 
+            sx={{ 
+              height: '100%', 
+              display: 'flex', 
+              flexDirection: 'column',
+              cursor: 'pointer',
+              '&:hover': {
+                boxShadow: 6,
+                transform: 'translateY(-4px)',
+                transition: 'all 0.3s'
+              }
+            }}
+            onClick={() => navigate('/admin/statistics')}
+          >
+            <CardContent>
+              <Box display="flex" alignItems="center" mb={2}>
+                <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
+                  <TrendingUpIcon />
+                </Avatar>
+                <Typography variant="h6">Daily Statistics</Typography>
+              </Box>
+              <Typography variant="h3" component="div" align="center" sx={{ my: 2 }}>
+                {statsLoading ? (
+                  <CircularProgress size={40} />
                 ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} align="center">No flagged logs found</TableCell>
-                  </TableRow>
+                  dailyStats ? Object.keys(dailyStats).length : '0'
                 )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
+              </Typography>
+              <Typography variant="body2" color="text.secondary" align="center">
+                {statsLoading ? 'Loading statistics...' : 'Daily attendance trends'}
+              </Typography>
+            </CardContent>
+          </Card>
+
+          {/* Valid Locations Card */}
+          <Card 
+            sx={{ 
+              height: '100%', 
+              display: 'flex', 
+              flexDirection: 'column',
+              cursor: 'pointer',
+              '&:hover': {
+                boxShadow: 6,
+                transform: 'translateY(-4px)',
+                transition: 'all 0.3s'
+              }
+            }}
+            onClick={() => navigate('/admin/statistics')}
+          >
+            <CardContent>
+              <Box display="flex" alignItems="center" mb={2}>
+                <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
+                  <LocationOnIcon />
+                </Avatar>
+                <Typography variant="h6">Valid Locations</Typography>
+              </Box>
+              <Typography variant="h3" component="div" align="center" sx={{ my: 2 }}>
+                {statsLoading ? (
+                  <CircularProgress size={40} />
+                ) : (
+                  summaryStats?.valid_locations || '0'
+                )}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" align="center">
+                Attendance from valid locations
+              </Typography>
+            </CardContent>
+          </Card>
+
+          {/* Summary Statistics Card */}
+          <Card 
+            sx={{ 
+              height: '100%', 
+              display: 'flex', 
+              flexDirection: 'column',
+              cursor: 'pointer',
+              '&:hover': {
+                boxShadow: 6,
+                transform: 'translateY(-4px)',
+                transition: 'all 0.3s'
+              }
+            }}
+            onClick={() => navigate('/admin/statistics')}
+          >
+            <CardContent>
+              <Box display="flex" alignItems="center" mb={2}>
+                <Avatar sx={{ bgcolor: 'secondary.main', mr: 2 }}>
+                  <PieChartIcon />
+                </Avatar>
+                <Typography variant="h6">Summary Stats</Typography>
+              </Box>
+              <Typography variant="h3" component="div" align="center" sx={{ my: 2 }}>
+                {statsLoading ? (
+                  <CircularProgress size={40} />
+                ) : (
+                  summaryStats?.total_attendance || '0'
+                )}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" align="center">
+                Total attendance summary
+              </Typography>
+            </CardContent>
+          </Card>
+        </div>
       </Container>
     </Box>
   );

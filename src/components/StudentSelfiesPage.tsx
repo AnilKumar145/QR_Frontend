@@ -81,22 +81,27 @@ const StudentSelfiesPage: React.FC = () => {
 
   // Function to determine the correct image source
   const getImageSource = (selfie: AttendanceRecord) => {
-    // First try the new database endpoint
+    // First try the direct endpoint with attendance ID
     if (selfie.id) {
       return `https://qr-backend-1-pq5i.onrender.com/api/v1/attendance/selfie/${selfie.id}`;
     }
     
-    // Fallback to the old methods
-    if (selfie.selfie_path?.startsWith('http')) {
+    // Check if selfie_path is null or empty
+    if (!selfie.selfie_path) {
+      return getInitialsPlaceholder(selfie.name);
+    }
+    
+    // Handle different path formats
+    if (selfie.selfie_path.startsWith('http')) {
       return selfie.selfie_path;
     }
     
-    if (selfie.selfie_path?.startsWith('static/')) {
-      return `https://qr-backend-1-pq5i.onrender.com/${selfie.selfie_path}`;
+    if (selfie.selfie_path.startsWith('static/') || selfie.selfie_path.startsWith('/static/')) {
+      return `https://qr-backend-1-pq5i.onrender.com/${selfie.selfie_path.replace(/^\//, '')}`;
     }
     
-    // Fallback to placeholder
-    return getInitialsPlaceholder(selfie.name);
+    // If path exists but doesn't match known patterns, try direct URL
+    return `https://qr-backend-1-pq5i.onrender.com${selfie.selfie_path.startsWith('/') ? '' : '/'}${selfie.selfie_path}`;
   };
 
   useEffect(() => {
@@ -419,6 +424,7 @@ const StudentSelfiesPage: React.FC = () => {
 };
 
 export default StudentSelfiesPage;
+
 
 
 
