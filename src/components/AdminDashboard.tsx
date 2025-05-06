@@ -98,6 +98,10 @@ const AdminDashboard: React.FC = () => {
     }
   }, [token]);
 
+  const handleViewStatistics = () => {
+    navigate('/admin/statistics');
+  };
+
   useEffect(() => {
     if (!token) {
       navigate('/admin/login');
@@ -340,7 +344,7 @@ const AdminDashboard: React.FC = () => {
                 transition: 'all 0.3s'
               }
             }}
-            onClick={() => navigate('/admin/statistics')}
+            onClick={handleViewStatistics}
           >
             <CardContent>
               <Box display="flex" alignItems="center" mb={2}>
@@ -375,7 +379,7 @@ const AdminDashboard: React.FC = () => {
                 transition: 'all 0.3s'
               }
             }}
-            onClick={() => navigate('/admin/statistics')}
+            onClick={handleViewStatistics}
           >
             <CardContent>
               <Box display="flex" alignItems="center" mb={2}>
@@ -410,7 +414,7 @@ const AdminDashboard: React.FC = () => {
                 transition: 'all 0.3s'
               }
             }}
-            onClick={() => navigate('/admin/statistics')}
+            onClick={handleViewStatistics}
           >
             <CardContent>
               <Box display="flex" alignItems="center" mb={2}>

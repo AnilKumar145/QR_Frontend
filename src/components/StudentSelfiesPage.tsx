@@ -96,6 +96,7 @@ const StudentSelfiesPage: React.FC = () => {
       return selfie.selfie_path;
     }
     
+    // Handle paths that start with static/
     if (selfie.selfie_path.startsWith('static/') || selfie.selfie_path.startsWith('/static/')) {
       return `https://qr-backend-1-pq5i.onrender.com/${selfie.selfie_path.replace(/^\//, '')}`;
     }
@@ -117,8 +118,12 @@ const StudentSelfiesPage: React.FC = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
+        // Log the full response for debugging
+        console.log("Attendance response:", response.data);
+        
         // Filter out records without selfie_path
         const selfiesData = response.data.filter((record) => record.selfie_path);
+        console.log("Filtered selfies data:", selfiesData);
         
         // Initialize image loading state for all selfies
         const initialLoadingState = selfiesData.reduce((acc, selfie) => {
@@ -137,6 +142,7 @@ const StudentSelfiesPage: React.FC = () => {
       } catch (err) {
         const axiosError = err as AxiosError<ErrorResponse>;
         setError(axiosError.response?.data?.detail || 'Failed to fetch selfies');
+        console.error("Error fetching selfies:", axiosError);
       } finally {
         setLoading(false);
       }
@@ -424,6 +430,9 @@ const StudentSelfiesPage: React.FC = () => {
 };
 
 export default StudentSelfiesPage;
+
+
+
 
 
 
