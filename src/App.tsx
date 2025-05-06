@@ -5,6 +5,8 @@ import { QRCodeDisplay } from './components/QRCodeDisplay';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import StudentSelfiesPage from './components/StudentSelfiesPage';
+import AttendanceRecordsPage from './components/AttendanceRecordsPage';
+import FlaggedLogsPage from './components/FlaggedLogsPage';
 import NotFound from './components/NotFound';
 import { AuthProvider, AuthContext } from './contexts/AuthContext';
 import { useContext } from 'react';
@@ -73,6 +75,22 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/admin/attendance" 
+              element={
+                <ProtectedRoute>
+                  <AttendanceRecordsPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/flagged-logs" 
+              element={
+                <ProtectedRoute>
+                  <FlaggedLogsPage />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* 404 Route */}
             <Route path="*" element={<NotFound />} />
@@ -84,6 +102,7 @@ function App() {
 }
 
 export default App;
+
 
 
 

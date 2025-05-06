@@ -126,9 +126,6 @@ const AdminDashboard: React.FC = () => {
 
   // Calculate statistics
   const totalAttendance = attendance.length;
-  const validLocations = attendance.filter(record => record.is_valid_location).length;
-  const invalidLocations = totalAttendance - validLocations;
-  const validPercentage = totalAttendance > 0 ? (validLocations / totalAttendance * 100).toFixed(1) : '0';
 
   if (loading) {
     return (
@@ -193,15 +190,28 @@ const AdminDashboard: React.FC = () => {
 
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
           gap: '16px',
           marginBottom: '24px'
         }}>
           {/* Total Attendance Card */}
-          <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <Card 
+            sx={{ 
+              height: '100%', 
+              display: 'flex', 
+              flexDirection: 'column',
+              cursor: 'pointer',
+              '&:hover': {
+                boxShadow: 6,
+                transform: 'translateY(-4px)',
+                transition: 'all 0.3s'
+              }
+            }}
+            onClick={() => navigate('/admin/attendance')}
+          >
             <CardContent>
               <Box display="flex" alignItems="center" mb={2}>
-                <Avatar sx={{ bgcolor: theme.palette.primary.main, mr: 2 }}>
+                <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
                   <PeopleIcon />
                 </Avatar>
                 <Typography variant="h6">Total Attendance</Typography>
@@ -210,43 +220,38 @@ const AdminDashboard: React.FC = () => {
                 {totalAttendance}
               </Typography>
               <Typography variant="body2" color="text.secondary" align="center">
-                Total students who marked attendance
+                View all attendance records
               </Typography>
             </CardContent>
           </Card>
-          
-          {/* Valid Locations Card */}
-          <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" mb={2}>
-                <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
-                  <LocationOnIcon />
-                </Avatar>
-                <Typography variant="h6">Valid Locations</Typography>
-              </Box>
-              <Typography variant="h3" component="div" align="center" sx={{ my: 2 }}>
-                {validLocations}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" align="center">
-                {validPercentage}% of total attendance
-              </Typography>
-            </CardContent>
-          </Card>
-          
-          {/* Invalid Locations Card */}
-          <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+
+          {/* Invalid Location Card */}
+          <Card 
+            sx={{ 
+              height: '100%', 
+              display: 'flex', 
+              flexDirection: 'column',
+              cursor: 'pointer',
+              '&:hover': {
+                boxShadow: 6,
+                transform: 'translateY(-4px)',
+                transition: 'all 0.3s'
+              }
+            }}
+            onClick={() => navigate('/admin/flagged-logs')}
+          >
             <CardContent>
               <Box display="flex" alignItems="center" mb={2}>
                 <Avatar sx={{ bgcolor: 'error.main', mr: 2 }}>
                   <LocationOffIcon />
                 </Avatar>
-                <Typography variant="h6">Invalid Locations</Typography>
+                <Typography variant="h6">Flagged Logs</Typography>
               </Box>
               <Typography variant="h3" component="div" align="center" sx={{ my: 2 }}>
-                {invalidLocations}
+                {flaggedLogs.length}
               </Typography>
               <Typography variant="body2" color="text.secondary" align="center">
-                Students outside campus boundary
+                View all flagged attendance logs
               </Typography>
             </CardContent>
           </Card>
