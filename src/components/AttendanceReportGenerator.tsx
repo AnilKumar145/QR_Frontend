@@ -9,15 +9,15 @@ import {
   Select, 
   MenuItem, 
   TextField, 
-  Grid as MuiGrid, 
   CircularProgress, 
   Alert,
   Snackbar,
   SelectChangeEvent,
   FormControlLabel,
   Checkbox,
-  GridProps
+  Stack
 } from '@mui/material';
+// Use Stack instead of Grid for layout
 // Import from the correct paths for MUI X Date Pickers v7
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -28,9 +28,6 @@ import { AuthContext } from '../contexts/AuthContext';
 import axios from 'axios';
 // We'll use a dynamic import for XLSX to avoid TypeScript errors
 // import * as XLSX from 'xlsx';
-
-// Create a Grid component that works with both v5 and v6/v7
-const Grid = (props: GridProps) => <MuiGrid {...props} />;
 
 interface ReportOptions {
   reportType: string;
@@ -157,117 +154,113 @@ const AttendanceReportGenerator: React.FC = () => {
           Generate Attendance Report
         </Typography>
         
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Report Type</InputLabel>
-              <Select
-                name="reportType"
-                value={options.reportType}
-                onChange={handleChange as (event: SelectChangeEvent<string>) => void}
-                label="Report Type"
-              >
-                <MenuItem value="daily">Daily Summary</MenuItem>
-                <MenuItem value="student">By Student</MenuItem>
-                <MenuItem value="course">By Course</MenuItem>
-                <MenuItem value="detailed">Detailed (All Records)</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
+        <Stack spacing={3}>
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+            <Box sx={{ width: { xs: '100%', md: '50%' } }}>
+              <FormControl fullWidth margin="normal">
+                <InputLabel>Report Type</InputLabel>
+                <Select
+                  name="reportType"
+                  value={options.reportType}
+                  onChange={handleChange as (event: SelectChangeEvent<string>) => void}
+                  label="Report Type"
+                >
+                  <MenuItem value="daily">Daily Summary</MenuItem>
+                  <MenuItem value="student">By Student</MenuItem>
+                  <MenuItem value="course">By Course</MenuItem>
+                  <MenuItem value="detailed">Detailed (All Records)</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+            
+            <Box sx={{ width: { xs: '100%', md: '50%' } }}>
+              <FormControl fullWidth margin="normal">
+                <InputLabel>Format</InputLabel>
+                <Select
+                  name="format"
+                  value={options.format}
+                  onChange={handleChange as (event: SelectChangeEvent<string>) => void}
+                  label="Format"
+                >
+                  <MenuItem value="excel">Excel</MenuItem>
+                  <MenuItem value="pdf">PDF</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </Stack>
           
-          <Grid item xs={12} md={6}>
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Format</InputLabel>
-              <Select
-                name="format"
-                value={options.format}
-                onChange={handleChange as (event: SelectChangeEvent<string>) => void}
-                label="Format"
-              >
-                <MenuItem value="excel">Excel</MenuItem>
-                <MenuItem value="pdf">PDF</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+            <Box sx={{ width: { xs: '100%', md: '50%' } }}>
+              <DatePicker
+                label="Start Date"
+                value={options.startDate}
+                onChange={(date) => handleDateChange('startDate', date)}
+                slotProps={{ textField: { fullWidth: true, margin: 'normal' } }}
+              />
+            </Box>
+            
+            <Box sx={{ width: { xs: '100%', md: '50%' } }}>
+              <DatePicker
+                label="End Date"
+                value={options.endDate}
+                onChange={(date) => handleDateChange('endDate', date)}
+                slotProps={{ textField: { fullWidth: true, margin: 'normal' } }}
+              />
+            </Box>
+          </Stack>
           
-          <Grid item xs={12} md={6}>
-            <DatePicker
-              label="Start Date"
-              value={options.startDate}
-              onChange={(date) => handleDateChange('startDate', date)}
-              slotProps={{ textField: { fullWidth: true, margin: 'normal' } }}
-            />
-          </Grid>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={options.includePhotos}
+                onChange={handleCheckboxChange}
+                name="includePhotos"
+                color="primary"
+              />
+            }
+            label="Include Photos (Email only)"
+          />
           
-          <Grid item xs={12} md={6}>
-            <DatePicker
-              label="End Date"
-              value={options.endDate}
-              onChange={(date) => handleDateChange('endDate', date)}
-              slotProps={{ textField: { fullWidth: true, margin: 'normal' } }}
-            />
-          </Grid>
+          <TextField
+            fullWidth
+            margin="normal"
+            name="emailTo"
+            label="Email Report To (Optional)"
+            value={options.emailTo}
+            onChange={handleChange as (event: React.ChangeEvent<HTMLInputElement>) => void}
+            placeholder="Enter email address"
+          />
           
-          <Grid item xs={12}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={options.includePhotos}
-                  onChange={handleCheckboxChange}
-                  name="includePhotos"
-                  color="primary"
-                />
-              }
-              label="Include Photos (Email only)"
-            />
-          </Grid>
-          
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              margin="normal"
-              name="emailTo"
-              label="Email Report To (Optional)"
-              value={options.emailTo}
-              onChange={handleChange as (event: React.ChangeEvent<HTMLInputElement>) => void}
-              placeholder="Enter email address"
-            />
-          </Grid>
-          
-          <Grid item xs={12}>
-            <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+            <Button
+              variant="contained"
+              startIcon={<DownloadIcon />}
+              onClick={generateReport}
+              disabled={loading || !options.startDate || !options.endDate}
+              sx={{ 
+                background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
+              }}
+            >
+              {loading ? <CircularProgress size={24} /> : 'Download Report'}
+            </Button>
+            
+            {options.emailTo && (
               <Button
-                variant="contained"
-                startIcon={<DownloadIcon />}
+                variant="outlined"
+                startIcon={<EmailIcon />}
                 onClick={generateReport}
                 disabled={loading || !options.startDate || !options.endDate}
-                sx={{ 
-                  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-                  boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
-                }}
               >
-                {loading ? <CircularProgress size={24} /> : 'Download Report'}
+                Email Report
               </Button>
-              
-              {options.emailTo && (
-                <Button
-                  variant="outlined"
-                  startIcon={<EmailIcon />}
-                  onClick={generateReport}
-                  disabled={loading || !options.startDate || !options.endDate}
-                >
-                  Email Report
-                </Button>
-              )}
-            </Box>
-          </Grid>
+            )}
+          </Box>
           
           {error && (
-            <Grid item xs={12}>
-              <Alert severity="error">{error}</Alert>
-            </Grid>
+            <Alert severity="error">{error}</Alert>
           )}
-        </Grid>
+        </Stack>
         
         <Snackbar
           open={!!success}
@@ -281,6 +274,9 @@ const AttendanceReportGenerator: React.FC = () => {
 };
 
 export default AttendanceReportGenerator;
+
+
+
 
 
 
