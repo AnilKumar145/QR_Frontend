@@ -61,22 +61,44 @@ const StudentSelfiesPage: React.FC = () => {
 
   // Add a function to generate a placeholder image based on student name
   const getInitialsPlaceholder = (name: string) => {
+    // Get initials from name
     const initials = name
       .split(' ')
-      .map(word => word[0])
+      .map(part => part[0])
       .join('')
       .toUpperCase()
       .substring(0, 2);
     
-    // Generate a consistent color based on the name
-    const colors = [
-      '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6', 
-      '#1abc9c', '#d35400', '#c0392b', '#16a085', '#8e44ad'
-    ];
-    const colorIndex = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length;
-    const bgColor = colors[colorIndex];
+    // Generate a random but consistent color based on the name
+    const getColorFromName = (name: string) => {
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const hue = Math.abs(hash % 360);
+      return `hsl(${hue}, 70%, 60%)`;
+    };
     
-    return `https://ui-avatars.com/api/?name=${initials}&background=${bgColor.substring(1)}&color=fff&size=200&font-size=0.5`;
+    // Create a canvas element
+    const canvas = document.createElement('canvas');
+    canvas.width = 200;
+    canvas.height = 200;
+    const context = canvas.getContext('2d');
+    
+    if (context) {
+      // Fill background
+      context.fillStyle = getColorFromName(name);
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Add text
+      context.font = 'bold 80px Arial';
+      context.fillStyle = 'white';
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      context.fillText(initials, canvas.width / 2, canvas.height / 2);
+    }
+    
+    return canvas.toDataURL('image/png');
   };
 
   // Function to determine the correct image source
@@ -430,6 +452,8 @@ const StudentSelfiesPage: React.FC = () => {
 };
 
 export default StudentSelfiesPage;
+
+
 
 
 
