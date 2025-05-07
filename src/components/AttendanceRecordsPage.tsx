@@ -10,6 +10,14 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import LocationOffIcon from '@mui/icons-material/LocationOff';
 import { AuthContext } from '../contexts/AuthContext';
 import axios from 'axios';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import TableChartIcon from '@mui/icons-material/TableChart';
+import PrintIcon from '@mui/icons-material/Print';
 
 interface AttendanceRecord {
   id: number;
@@ -31,6 +39,8 @@ const AttendanceRecordsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [exportAnchorEl, setExportAnchorEl] = useState<null | HTMLElement>(null);
+  const [exportLoading, setExportLoading] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -103,6 +113,54 @@ const AttendanceRecordsPage: React.FC = () => {
     navigate('/admin/login');
   };
 
+  const handleExportClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setExportAnchorEl(event.currentTarget);
+  };
+
+  const handleExportClose = () => {
+    setExportAnchorEl(null);
+  };
+
+  const exportToExcel = async () => {
+    try {
+      setExportLoading(true);
+      
+      // Dynamically import XLSX to avoid TypeScript errors
+      const XLSX = await import('xlsx');
+      
+      // Create a worksheet from the filtered attendance data
+      const worksheet = XLSX.utils.json_to_sheet(filteredAttendance);
+      
+      // Create a workbook and add the worksheet
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance');
+      
+      // Generate filename with current date
+      const date = new Date().toISOString().split('T')[0];
+      const fileName = `attendance_records_${date}.xlsx`;
+      
+      // Write the file and trigger download
+      XLSX.writeFile(workbook, fileName);
+      
+      setExportLoading(false);
+      handleExportClose();
+    } catch (error) {
+      console.error('Error exporting to Excel:', error);
+      setExportLoading(false);
+    }
+  };
+
+  const exportToPDF = () => {
+    // This would typically use a library like jsPDF
+    alert('PDF export functionality coming soon!');
+    handleExportClose();
+  };
+
+  const printRecords = () => {
+    window.print();
+    handleExportClose();
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" color="primary" elevation={0}>
@@ -121,6 +179,42 @@ const AttendanceRecordsPage: React.FC = () => {
           <Button color="inherit" onClick={handleLogout}>
             Logout
           </Button>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<FileDownloadIcon />}
+              onClick={handleExportClick}
+              sx={{ ml: 2 }}
+              disabled={loading || refreshing || filteredAttendance.length === 0}
+            >
+              Export
+            </Button>
+            <Menu
+              anchorEl={exportAnchorEl}
+              open={Boolean(exportAnchorEl)}
+              onClose={handleExportClose}
+            >
+              <MenuItem onClick={exportToExcel} disabled={exportLoading}>
+                <ListItemIcon>
+                  <TableChartIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Export to Excel</ListItemText>
+              </MenuItem>
+              <MenuItem onClick={exportToPDF} disabled={exportLoading}>
+                <ListItemIcon>
+                  <PictureAsPdfIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Export to PDF</ListItemText>
+              </MenuItem>
+              <MenuItem onClick={printRecords} disabled={exportLoading}>
+                <ListItemIcon>
+                  <PrintIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Print Records</ListItemText>
+              </MenuItem>
+            </Menu>
+          </Box>
         </Toolbar>
       </AppBar>
 
@@ -160,7 +254,7 @@ const AttendanceRecordsPage: React.FC = () => {
             {error}
           </Paper>
         ) : (
-          <TableContainer component={Paper} sx={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
+          <TableContainer component={Paper} sx={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }} id="attendance-table">
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
@@ -210,3 +304,27 @@ const AttendanceRecordsPage: React.FC = () => {
 };
 
 export default AttendanceRecordsPage;
+
+<style>
+  {`
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #attendance-table, #attendance-table * {
+        visibility: visible;
+      }
+      #attendance-table {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+      .MuiToolbar-root, .MuiAppBar-root, button {
+        display: none !important;
+      }
+    }
+  `}
+</style>
+
+

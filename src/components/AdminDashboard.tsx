@@ -24,6 +24,7 @@ import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import PieChartIcon from '@mui/icons-material/PieChart';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+// import AttendanceReportGenerator from './AttendanceReportGenerator';
 
 interface AttendanceRecord {
   id: number;
