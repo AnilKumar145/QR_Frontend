@@ -314,6 +314,3 @@ const StatisticsPage: React.FC = () => {
 
 export default StatisticsPage;
 
-
-
-

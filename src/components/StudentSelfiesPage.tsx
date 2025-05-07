@@ -103,12 +103,7 @@ const StudentSelfiesPage: React.FC = () => {
 
   // Function to determine the correct image source
   const getImageSource = (selfie: AttendanceRecord) => {
-    // First try the direct endpoint with attendance ID
-    if (selfie.id) {
-      return `https://qr-backend-1-pq5i.onrender.com/api/v1/attendance/selfie/${selfie.id}`;
-    }
-    
-    // Check if selfie_path is null or empty
+    // If selfie_path is null, undefined, or empty, return a placeholder
     if (!selfie.selfie_path) {
       return getInitialsPlaceholder(selfie.name);
     }
@@ -143,9 +138,9 @@ const StudentSelfiesPage: React.FC = () => {
         // Log the full response for debugging
         console.log("Attendance response:", response.data);
         
-        // Filter out records without selfie_path
-        const selfiesData = response.data.filter((record) => record.selfie_path);
-        console.log("Filtered selfies data:", selfiesData);
+        // Use all records instead of filtering
+        const selfiesData = response.data;
+        console.log("Selfies data:", selfiesData);
         
         // Initialize image loading state for all selfies
         const initialLoadingState = selfiesData.reduce((acc, selfie) => {
@@ -156,9 +151,6 @@ const StudentSelfiesPage: React.FC = () => {
         setImageLoading(initialLoadingState);
         setSelfies(selfiesData);
         setFilteredSelfies(selfiesData);
-        
-        // Log selfie paths for debugging
-        console.log("Selfie paths:", selfiesData.map(s => s.selfie_path));
         
         setError('');
       } catch (err) {
@@ -249,7 +241,7 @@ const StudentSelfiesPage: React.FC = () => {
           </IconButton>
           <DashboardIcon sx={{ mr: 2 }} />
           <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-            Student Selfies
+            Student Attendance Records
           </Typography>
           <Button color="inherit" onClick={handleLogout} sx={{ display: { xs: 'none', sm: 'block' } }}>
             Logout
@@ -347,6 +339,11 @@ const StudentSelfiesPage: React.FC = () => {
               />
             </Box>
           </Box>
+          
+          {/* Add a note about selfies */}
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Note: Actual selfie images are not available. Showing placeholder images based on student names.
+          </Alert>
         </Paper>
 
         <div style={{ 
@@ -370,31 +367,36 @@ const StudentSelfiesPage: React.FC = () => {
                   borderRadius: 2
                 }}
               >
-                <Box sx={{ position: 'relative' }}>
+                <Box sx={{ position: 'relative', paddingTop: '100%' }}>
                   {imageLoading[selfie.id] && (
                     <Skeleton 
                       variant="rectangular" 
-                      height={200} 
+                      height="100%" 
                       animation="wave" 
-                      sx={{ bgcolor: 'rgba(0,0,0,0.1)' }} 
+                      sx={{ 
+                        bgcolor: 'rgba(0,0,0,0.1)',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%'
+                      }} 
                     />
                   )}
                   <CardMedia
                     component="img"
-                    height="200"
                     image={getImageSource(selfie)}
-                    alt={`${selfie.name}'s selfie`}
+                    alt={`${selfie.name}'s attendance`}
                     sx={{ 
                       objectFit: 'cover',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
                       display: imageLoading[selfie.id] ? 'none' : 'block'
                     }}
                     onLoad={() => handleImageLoad(selfie.id)}
-                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                      handleImageLoad(selfie.id);
-                      const target = e.currentTarget;
-                      target.onerror = null;
-                      target.src = getInitialsPlaceholder(selfie.name);
-                    }}
                   />
                   <Chip
                     icon={selfie.is_valid_location ? <LocationOnIcon /> : <LocationOffIcon />}
@@ -438,9 +440,9 @@ const StudentSelfiesPage: React.FC = () => {
                   boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
                 }}
               >
-                <Typography variant="h6">No selfies found</Typography>
+                <Typography variant="h6">No records found</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {searchQuery ? 'Try a different search term' : 'No attendance records with selfies available'}
+                  {searchQuery ? 'Try a different search term' : 'No attendance records available'}
                 </Typography>
               </Paper>
             </div>
@@ -452,6 +454,10 @@ const StudentSelfiesPage: React.FC = () => {
 };
 
 export default StudentSelfiesPage;
+
+
+
+
 
 
 
