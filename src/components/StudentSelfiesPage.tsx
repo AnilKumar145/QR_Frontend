@@ -5,8 +5,7 @@ import {
   Container, 
   TextField, 
   InputAdornment, 
-  Card, 
-  CardMedia, 
+  Card,
   CardContent, 
   CircularProgress, 
   Alert, 
@@ -61,13 +60,15 @@ const StudentSelfiesPage: React.FC = () => {
 
   // Add a function to generate a placeholder image based on student name
   const getInitialsPlaceholder = (name: string) => {
-    // Get initials from name
+    // Get initials from name (handle empty names)
     const initials = name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
+      ? name
+          .split(' ')
+          .map(part => part[0] || '')
+          .join('')
+          .toUpperCase()
+          .substring(0, 2)
+      : '??';
     
     // Generate a random but consistent color based on the name
     const getColorFromName = (name: string) => {
@@ -87,7 +88,7 @@ const StudentSelfiesPage: React.FC = () => {
     
     if (context) {
       // Fill background
-      context.fillStyle = getColorFromName(name);
+      context.fillStyle = getColorFromName(name || 'Unknown');
       context.fillRect(0, 0, canvas.width, canvas.height);
       
       // Add text
@@ -120,6 +121,15 @@ const StudentSelfiesPage: React.FC = () => {
     
     // If path exists but doesn't match known patterns, try direct URL
     return `https://qr-backend-1-pq5i.onrender.com${selfie.selfie_path.startsWith('/') ? '' : '/'}${selfie.selfie_path}`;
+  };
+
+  // Add a function to handle image errors
+  const handleImageError = (id: number) => {
+    console.log(`Image failed to load for ID: ${id}`);
+    setImageLoading(prev => ({
+      ...prev,
+      [id]: false
+    }));
   };
 
   useEffect(() => {
@@ -383,11 +393,10 @@ const StudentSelfiesPage: React.FC = () => {
                       }} 
                     />
                   )}
-                  <CardMedia
-                    component="img"
-                    image={getImageSource(selfie)}
+                  <img
+                    src={getImageSource(selfie)}
                     alt={`${selfie.name}'s attendance`}
-                    sx={{ 
+                    style={{ 
                       objectFit: 'cover',
                       position: 'absolute',
                       top: 0,
@@ -397,6 +406,10 @@ const StudentSelfiesPage: React.FC = () => {
                       display: imageLoading[selfie.id] ? 'none' : 'block'
                     }}
                     onLoad={() => handleImageLoad(selfie.id)}
+                    onError={() => {
+                      handleImageError(selfie.id);
+                      // The error will cause it to fall back to the placeholder
+                    }}
                   />
                   <Chip
                     icon={selfie.is_valid_location ? <LocationOnIcon /> : <LocationOffIcon />}
@@ -454,6 +467,8 @@ const StudentSelfiesPage: React.FC = () => {
 };
 
 export default StudentSelfiesPage;
+
+
 
 
 

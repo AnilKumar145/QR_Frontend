@@ -83,12 +83,40 @@ const StatisticsPage: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       
-      // Transform daily stats for chart
-      const dailyData = Object.entries(dailyRes.data).map(([date, count]) => ({
-        date,
-        count: Number(count)
-      })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      console.log("Daily statistics raw data:", dailyRes.data);
       
+      // Transform daily stats for chart - handle both object and array formats
+      let dailyData: DailyStatsItem[] = [];
+      
+      if (Array.isArray(dailyRes.data)) {
+        // If it's already an array, use it directly
+        dailyData = dailyRes.data.map(item => ({
+          date: item.date,
+          count: Number(item.count || item.total || 0)
+        }));
+      } else if (typeof dailyRes.data === 'object' && dailyRes.data !== null) {
+        // If it's an object with date keys, transform it
+        dailyData = Object.entries(dailyRes.data).map(([date, value]) => {
+          // Handle if value is an object with total/count property or just a number
+          let count = 0;
+          if (typeof value === 'object' && value !== null) {
+            count = Number('total' in value ? value.total : 
+                           'count' in value ? value.count : 0);
+          } else if (typeof value === 'number') {
+            count = value;
+          }
+          
+          return {
+            date,
+            count
+          };
+        });
+      }
+      
+      // Sort by date
+      dailyData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      
+      console.log("Transformed daily data:", dailyData);
       setDailyStats(dailyData);
       
       // Fetch summary statistics
@@ -96,19 +124,36 @@ const StatisticsPage: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       
+      console.log("Summary statistics raw data:", summaryRes.data);
+      
+      // Ensure we have valid numbers for the pie chart
+      const validLocations = Number(summaryRes.data.valid_locations || 0);
+      const invalidLocations = Number(summaryRes.data.invalid_locations || 0);
+      
       // Transform summary stats for pie chart
       const summaryData = [
-        { name: 'Valid Locations', value: summaryRes.data.valid_locations },
-        { name: 'Invalid Locations', value: summaryRes.data.invalid_locations },
+        { name: 'Valid Locations', value: validLocations },
+        { name: 'Invalid Locations', value: invalidLocations },
       ];
+      
+      // Filter out zero values to avoid empty pie segments
+      const filteredSummaryData = summaryData.filter(item => item.value > 0);
+      
+      // If all values are zero, add a placeholder
+      if (filteredSummaryData.length === 0) {
+        filteredSummaryData.push({ name: 'No Data', value: 1 });
+      }
+      
+      console.log("Transformed pie chart data:", filteredSummaryData);
       
       setSummaryStats({
         raw: summaryRes.data,
-        pieData: summaryData
+        pieData: filteredSummaryData
       });
       
       setError('');
-    } catch (err: unknown) {
+    } catch (err) {
+      console.error("Error fetching statistics:", err);
       const error = err as { response?: { data?: { detail?: string } } };
       setError(error.response?.data?.detail || 'Failed to fetch statistics');
     } finally {
@@ -142,13 +187,12 @@ const StatisticsPage: React.FC = () => {
 
   // Custom label formatter for pie chart
   const renderCustomizedLabel = ({ name, percent }: PieChartLabelProps) => {
-    return `${name}: ${(percent * 100).toFixed(0)}%`;
+    // Handle NaN or undefined percent
+    const safePercent = isNaN(percent) ? 0 : percent;
+    return `${name}: ${(safePercent * 100).toFixed(0)}%`;
   };
 
-  // Custom tooltip formatter for charts
-  const customTooltipFormatter = (value: number) => {
-    return [`${value} attendances`, ''];
-  };
+
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -198,14 +242,14 @@ const StatisticsPage: React.FC = () => {
                 <Typography variant="h6" gutterBottom>
                   Summary Statistics
                 </Typography>
-                {summaryStats && (
+                {summaryStats ? (
                   <>
                     <Box sx={{ mb: 2 }}>
                       <Typography variant="body2" color="text.secondary">
                         Total Attendance
                       </Typography>
                       <Typography variant="h4">
-                        {summaryStats.raw.total_attendance}
+                        {isNaN(Number(summaryStats.raw.total_attendance)) ? 0 : summaryStats.raw.total_attendance}
                       </Typography>
                     </Box>
                     
@@ -214,7 +258,7 @@ const StatisticsPage: React.FC = () => {
                         Unique Students
                       </Typography>
                       <Typography variant="h4">
-                        {summaryStats.raw.unique_students}
+                        {isNaN(Number(summaryStats.raw.unique_students)) ? 0 : summaryStats.raw.unique_students}
                       </Typography>
                     </Box>
                     
@@ -223,7 +267,7 @@ const StatisticsPage: React.FC = () => {
                         Today's Attendance
                       </Typography>
                       <Typography variant="h4">
-                        {summaryStats.raw.today_attendance}
+                        {isNaN(Number(summaryStats.raw.today_attendance)) ? 0 : summaryStats.raw.today_attendance}
                       </Typography>
                     </Box>
                     
@@ -232,10 +276,16 @@ const StatisticsPage: React.FC = () => {
                         Flagged Logs
                       </Typography>
                       <Typography variant="h4">
-                        {summaryStats.raw.flagged_logs}
+                        {isNaN(Number(summaryStats.raw.flagged_logs)) ? 0 : summaryStats.raw.flagged_logs}
                       </Typography>
                     </Box>
                   </>
+                ) : (
+                  <Box display="flex" justifyContent="center" alignItems="center" height={300}>
+                    <Typography variant="body1" color="text.secondary">
+                      No summary statistics available
+                    </Typography>
+                  </Box>
                 )}
               </Paper>
             </Box>
@@ -246,7 +296,7 @@ const StatisticsPage: React.FC = () => {
                 <Typography variant="h6" gutterBottom>
                   Location Validity
                 </Typography>
-                {summaryStats && (
+                {summaryStats && summaryStats.pieData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
                       <Pie
@@ -258,15 +308,28 @@ const StatisticsPage: React.FC = () => {
                         fill="#8884d8"
                         dataKey="value"
                         label={renderCustomizedLabel}
+                        isAnimationActive={!refreshing} // Disable animation during refresh
                       >
                         {summaryStats.pieData.map((_entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip formatter={customTooltipFormatter} />
+                      <Tooltip 
+                        formatter={(value) => {
+                          // Handle NaN or undefined value
+                          const safeValue = isNaN(Number(value)) ? 0 : Number(value);
+                          return [`${safeValue} attendances`, ''];
+                        }}
+                      />
                       <Legend />
                     </PieChart>
                   </ResponsiveContainer>
+                ) : (
+                  <Box display="flex" justifyContent="center" alignItems="center" height={300}>
+                    <Typography variant="body1" color="text.secondary">
+                      No location data available
+                    </Typography>
+                  </Box>
                 )}
               </Paper>
             </Box>
@@ -289,11 +352,52 @@ const StatisticsPage: React.FC = () => {
                       }}
                     >
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" />
-                      <YAxis />
-                      <Tooltip />
+                      <XAxis 
+                        dataKey="date" 
+                        tickFormatter={(value) => {
+                          // Format date to be more readable
+                          try {
+                            const date = new Date(value);
+                            return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                          } catch {
+                            // No need to use the error variable
+                            return value;
+                          }
+                        }}
+                      />
+                      <YAxis 
+                        allowDecimals={false}
+                        domain={[0, 'dataMax + 1']}
+                      />
+                      <Tooltip 
+                        formatter={(value) => {
+                          // Handle NaN or undefined value
+                          const safeValue = isNaN(Number(value)) ? 0 : Number(value);
+                          return [`${safeValue} attendances`, 'Count'];
+                        }}
+                        labelFormatter={(label) => {
+                          // Format the date in the tooltip
+                          try {
+                            const date = new Date(label);
+                            return date.toLocaleDateString(undefined, { 
+                              weekday: 'long', 
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric' 
+                            });
+                          } catch {
+                            // No need to use the error variable
+                            return label;
+                          }
+                        }}
+                      />
                       <Legend />
-                      <Bar dataKey="count" fill="#8884d8" name="Attendance Count" />
+                      <Bar 
+                        dataKey="count" 
+                        fill="#8884d8" 
+                        name="Attendance Count"
+                        isAnimationActive={!refreshing} // Disable animation during refresh
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -313,4 +417,10 @@ const StatisticsPage: React.FC = () => {
 };
 
 export default StatisticsPage;
+
+
+
+
+
+
 
