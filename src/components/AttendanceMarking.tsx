@@ -12,28 +12,11 @@ import {
 import { PhotoCamera } from '@mui/icons-material';
 import Webcam from 'react-webcam';
 import { useGeolocation } from '../hooks/useGeoLocation';
-import { attendanceService } from '../services/attendanceService';
+import { api } from '../api';
 import { useParams } from 'react-router-dom';
+import axios from 'axios';
 
-interface ApiError extends Error {
-    response?: {
-        data?: {
-            detail?: string | object;
-        };
-    };
-}
-
-interface LocationErrorDetail {
-    error: string;
-    message: string;
-    your_location: {
-        lat: number;
-        lon: number;
-    };
-    distance: number;
-    max_allowed_distance: number;
-}
-
+// Keep the GeoLocation interface as it's used by the useGeolocation hook
 interface GeoLocation {
     latitude: number;
     longitude: number;
@@ -41,19 +24,12 @@ interface GeoLocation {
     accuracy: number;
 }
 
-const validateLocation = async (location: GeoLocation) => {
-    try {
-        const response = await attendanceService.validateLocation(
-            location.latitude,
-            location.longitude
-        );
-        console.log('Location validation response:', response);
-        return response.is_valid;
-    } catch (error) {
-        console.error('Location validation failed:', error);
-        throw error;
-    }
-};
+// Simple interface for location validation response
+interface LocationValidationResponse {
+    is_valid: boolean;
+    distance_meters: number;
+    max_allowed_distance_meters: number;
+}
 
 const validateEmail = (email: string) => {
     const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -67,8 +43,8 @@ const validatePhone = (phone: string) => {
 };
 
 export const AttendanceMarking: React.FC = () => {
-    const { sessionId } = useParams();
-    const [formData, setFormData] = useState({
+    const { sessionId } = useParams<{ sessionId: string }>();
+    const [formValues, setFormValues] = useState({
         name: '',
         email: '',
         roll_no: '',
@@ -81,9 +57,52 @@ export const AttendanceMarking: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | ReactNode | null>(null);
     const [success, setSuccess] = useState(false);
+    const [locationValid, setLocationValid] = useState<boolean | null>(null);
 
     const webcamRef = useRef<Webcam>(null);
     const { location } = useGeolocation();
+
+    // Validate location with the backend
+    const validateLocation = async (loc: GeoLocation): Promise<boolean> => {
+        try {
+            const response = await api.get('/utils/location/validate', {
+                params: {
+                    lat: loc.latitude,
+                    lon: loc.longitude
+                }
+            });
+            
+            const data = response.data as LocationValidationResponse;
+            return data.is_valid;
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                console.error('Location validation error:', error.response.data);
+                // If we get a specific error message from the server, use it
+                if (error.response.data.detail) {
+                    setError(`Location error: ${error.response.data.detail}`);
+                }
+            } else {
+                console.error('Location validation error:', error);
+            }
+            return false;
+        }
+    };
+
+    // Check location validity when location changes
+    useEffect(() => {
+        if (location) {
+            const checkLocation = async () => {
+                const isValid = await validateLocation(location);
+                setLocationValid(isValid);
+                
+                if (!isValid) {
+                    setError("Your location is outside the allowed area. Please ensure you are within the venue boundaries.");
+                }
+            };
+            
+            checkLocation();
+        }
+    }, [location]);
 
     useEffect(() => {
         if (navigator.geolocation) {
@@ -98,8 +117,8 @@ export const AttendanceMarking: React.FC = () => {
     }, []);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({
-            ...formData,
+        setFormValues({
+            ...formValues,
             [e.target.name]: e.target.value
         });
     };
@@ -119,37 +138,38 @@ export const AttendanceMarking: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError(null);
         setLoading(true);
-
+        setError(null);
+        
         try {
-            // Enhanced form validations
-            if (!formData.name.trim()) {
+            // Validate form data...
+            
+            if (!formValues.name.trim()) {
                 setError('Name is required.');
                 setLoading(false);
                 return;
             }
-            if (!validateEmail(formData.email)) {
+            if (!validateEmail(formValues.email)) {
                 setError('Please enter a valid email address (e.g., student@example.com).');
                 setLoading(false);
                 return;
             }
-            if (!formData.roll_no.trim()) {
+            if (!formValues.roll_no.trim()) {
                 setError('Roll number is required.');
                 setLoading(false);
                 return;
             }
-            if (!validatePhone(formData.phone)) {
+            if (!validatePhone(formValues.phone)) {
                 setError('Please enter a valid 10-digit phone number.');
                 setLoading(false);
                 return;
             }
-            if (!formData.branch.trim()) {
+            if (!formValues.branch.trim()) {
                 setError('Branch is required.');
                 setLoading(false);
                 return;
             }
-            if (!formData.section.trim()) {
+            if (!formValues.section.trim()) {
                 setError('Section is required.');
                 setLoading(false);
                 return;
@@ -157,6 +177,13 @@ export const AttendanceMarking: React.FC = () => {
 
             if (!location) {
                 setError("Location data is not available. Please enable location services and refresh the page.");
+                setLoading(false);
+                return;
+            }
+
+            // Check if location is valid
+            if (locationValid === false) {
+                setError("Your location is outside the allowed area. Please ensure you are within the venue boundaries.");
                 setLoading(false);
                 return;
             }
@@ -172,68 +199,36 @@ export const AttendanceMarking: React.FC = () => {
                 setLoading(false);
                 return;
             }
-
-            // Log the data being sent to help debug
-            console.log('Submitting attendance with data:', {
-                session_id: sessionId,
-                ...formData,
-                location_lat: location ? Number(location.latitude.toFixed(6)) : null,
-                location_lon: location ? Number(location.longitude.toFixed(6)) : null,
-                selfie: selfie,
+            
+            // Create form data
+            const submitData = new FormData();
+            submitData.append('session_id', sessionId);
+            submitData.append('name', formValues.name);
+            submitData.append('email', formValues.email);
+            submitData.append('roll_no', formValues.roll_no);
+            submitData.append('phone', formValues.phone);
+            submitData.append('branch', formValues.branch);
+            submitData.append('section', formValues.section);
+            submitData.append('location_lat', location.latitude.toFixed(6));
+            submitData.append('location_lon', location.longitude.toFixed(6));
+            submitData.append('selfie', selfie);
+            
+            // Submit to the correct API endpoint
+            await api.post('/attendance/mark', submitData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
             });
-
-            // Pre-validate location before form submission
-            const isLocationValid = await validateLocation(location);
-            if (!isLocationValid) {
-                setError(
-                    <div>
-                        <strong>Location validation failed</strong>
-                        <p>You appear to be far from the institution campus in Vijayawada.</p>
-                        <p>Attendance can only be marked when you are physically present on campus.</p>
-                    </div>
-                );
-                setLoading(false);
-                return;
-            }
-
-            // Submit the attendance
-            await attendanceService.markAttendance({
-                session_id: sessionId,
-                ...formData,
-                location_lat: Number(location.latitude.toFixed(6)),
-                location_lon: Number(location.longitude.toFixed(6)),
-                selfie: selfie,
-            });
-
+            
+            // Handle success...
             setSuccess(true);
-        } catch (err: unknown) {
-            const error = err as ApiError;
-            console.error('Attendance submission error:', error);
-
-            if (error.response?.data?.detail && typeof error.response.data.detail === 'object') {
-                const detail = error.response.data.detail as LocationErrorDetail;
-                if (detail.error === "Location out of range") {
-                    setError(
-                        <div>
-                            <strong>You are too far from campus</strong>
-                            <p>{detail.message}</p>
-                            <p>Attendance can only be marked when you are physically present on the Vijayawada campus.</p>
-                            <small>
-                                Your location: {detail.your_location.lat.toFixed(4)}, {detail.your_location.lon.toFixed(4)}
-                                <br />
-                                Distance from campus: {detail.distance.toLocaleString()} meters
-                                <br />
-                                Maximum allowed distance: {detail.max_allowed_distance.toLocaleString()} meters
-                            </small>
-                        </div>
-                    );
-                }
+        } catch (error) {
+            // Handle error...
+            console.error('Error submitting attendance:', error);
+            if (axios.isAxiosError(error) && error.response) {
+                setError(`Failed to submit attendance: ${error.response.data.detail || 'Please try again.'}`);
             } else {
-                setError(
-                    typeof error.response?.data?.detail === 'string' ? error.response.data.detail :
-                    error.message || 
-                    'Failed to submit attendance. Please ensure you are on campus in Vijayawada.'
-                );
+                setError('Failed to submit attendance. Please try again.');
             }
         } finally {
             setLoading(false);
@@ -303,7 +298,7 @@ export const AttendanceMarking: React.FC = () => {
                             fullWidth
                             label="Name"
                             name="name"
-                            value={formData.name}
+                            value={formValues.name}
                             onChange={handleInputChange}
                             required
                             sx={{
@@ -317,7 +312,7 @@ export const AttendanceMarking: React.FC = () => {
                             label="Email"
                             name="email"
                             type="email"
-                            value={formData.email}
+                            value={formValues.email}
                             onChange={handleInputChange}
                             required
                             sx={{
@@ -335,7 +330,7 @@ export const AttendanceMarking: React.FC = () => {
                                 fullWidth
                                 label="Roll Number"
                                 name="roll_no"
-                                value={formData.roll_no}
+                                value={formValues.roll_no}
                                 onChange={handleInputChange}
                                 required
                                 sx={{
@@ -348,7 +343,7 @@ export const AttendanceMarking: React.FC = () => {
                                 fullWidth
                                 label="Phone"
                                 name="phone"
-                                value={formData.phone}
+                                value={formValues.phone}
                                 onChange={handleInputChange}
                                 required
                                 sx={{
@@ -367,7 +362,7 @@ export const AttendanceMarking: React.FC = () => {
                                 fullWidth
                                 label="Branch"
                                 name="branch"
-                                value={formData.branch}
+                                value={formValues.branch}
                                 onChange={handleInputChange}
                                 required
                                 sx={{
@@ -380,7 +375,7 @@ export const AttendanceMarking: React.FC = () => {
                                 fullWidth
                                 label="Section"
                                 name="section"
-                                value={formData.section}
+                                value={formValues.section}
                                 onChange={handleInputChange}
                                 required
                                 sx={{
@@ -393,17 +388,34 @@ export const AttendanceMarking: React.FC = () => {
                     </Box>
 
                     <Box sx={{ mt: 2 }}>
-                        {showCamera ? (
-                            <Box 
+                        {!selfie && !showCamera && (
+                            <Button
+                                variant="outlined"
+                                startIcon={<PhotoCamera />}
+                                onClick={() => setShowCamera(true)}
+                                fullWidth
                                 sx={{ 
-                                    position: 'relative',
-                                    width: '100%',
-                                    height: 'auto',
+                                    py: 1.5,
                                     borderRadius: 2,
-                                    overflow: 'hidden',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                    borderWidth: 2,
+                                    '&:hover': {
+                                        borderWidth: 2
+                                    }
                                 }}
                             >
+                                Take Selfie
+                            </Button>
+                        )}
+
+                        {showCamera && (
+                            <Box sx={{ 
+                                position: 'relative',
+                                width: '100%',
+                                borderRadius: 2,
+                                overflow: 'hidden',
+                                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                                mb: 2
+                            }}>
                                 <Webcam
                                     ref={webcamRef}
                                     audio={false}
@@ -442,21 +454,38 @@ export const AttendanceMarking: React.FC = () => {
                                     Capture
                                 </Button>
                             </Box>
-                        ) : (
-                            <Button
-                                variant="contained"
-                                startIcon={<PhotoCamera />}
-                                onClick={() => setShowCamera(true)}
-                                fullWidth
-                                sx={{ 
-                                    py: 1.5,
-                                    borderRadius: 2,
-                                    background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-                                    boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
-                                }}
-                            >
-                                {selfie ? 'Retake Selfie' : 'Take Selfie'}
-                            </Button>
+                        )}
+
+                        {selfie && (
+                            <Box sx={{ 
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: 1
+                            }}>
+                                <Box
+                                    component="img"
+                                    src={URL.createObjectURL(selfie)}
+                                    alt="Selfie"
+                                    sx={{ 
+                                        width: '100%',
+                                        maxWidth: 300,
+                                        borderRadius: 2,
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                    }}
+                                />
+                                <Button
+                                    variant="text"
+                                    color="primary"
+                                    onClick={() => {
+                                        setSelfie(null);
+                                        setShowCamera(true);
+                                    }}
+                                    sx={{ mt: 1 }}
+                                >
+                                    Retake Selfie
+                                </Button>
+                            </Box>
                         )}
                     </Box>
 
@@ -485,6 +514,9 @@ export const AttendanceMarking: React.FC = () => {
         </Card>
     );
 };
+
+
+
 
 
 

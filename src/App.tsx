@@ -59,6 +59,7 @@ function App() {
           <Routes>
             <Route path="/" element={<QRCodeDisplay />} />
             <Route path="/attendance/:sessionId" element={<AttendanceMarking />} />
+            <Route path="/mark-attendance/:sessionId" element={<AttendanceMarking />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             
             {/* Protected Routes */}
@@ -129,6 +130,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
