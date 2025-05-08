@@ -6,11 +6,11 @@ export const useQRSession = () => {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
-    const fetchNewSession = useCallback(async () => {
+    const fetchNewSession = useCallback(async (venueId?: number) => {
         setLoading(true);
         setError(null);
         try {
-            const newSession = await qrService.getCurrentSession();
+            const newSession = await qrService.getCurrentSession(venueId);
             setSession(newSession);
             return true; // Indicate successful fetch
         } catch (err) {
@@ -26,7 +26,7 @@ export const useQRSession = () => {
         fetchNewSession().then(success => {
             if (success) {
                 // Only start interval if initial fetch was successful
-                const intervalId = setInterval(fetchNewSession, 120000);
+                const intervalId = setInterval(() => fetchNewSession(), 120000);
                 return () => clearInterval(intervalId);
             }
         });
@@ -51,4 +51,5 @@ export const useQRSession = () => {
         refreshSession: fetchNewSession
     };
 };
+
 

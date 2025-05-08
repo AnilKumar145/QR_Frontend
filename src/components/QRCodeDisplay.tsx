@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Card,
@@ -9,15 +9,60 @@ import {
     Alert,
     useTheme,
     useMediaQuery,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    SelectChangeEvent,
+    Button
 } from '@mui/material';
 import { Refresh as RefreshIcon } from '@mui/icons-material';
 import { Timer } from './Timer';
 import { useQRSession } from '../hooks/useQRSession';
+import axios from 'axios';
+
+interface Venue {
+    id: number;
+    name: string;
+    institution_name: string;
+}
 
 export const QRCodeDisplay: React.FC = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const { session, loading, error, getRemainingTime, refreshSession } = useQRSession();
+    const [venues, setVenues] = useState<Venue[]>([]);
+    const [selectedVenue, setSelectedVenue] = useState<string>(''); // Updated to string
+    const [venuesLoading, setVenuesLoading] = useState(false);
+
+    useEffect(() => {
+        const fetchVenues = async () => {
+            try {
+                setVenuesLoading(true);
+                const response = await axios.get('https://qr-backend-1-pq5i.onrender.com/api/v1/venues/list');
+                setVenues(response.data);
+            } catch (err) {
+                console.error('Error fetching venues:', err);
+            } finally {
+                setVenuesLoading(false);
+            }
+        };
+        
+        fetchVenues();
+    }, []);
+
+    const handleVenueChange = (event: SelectChangeEvent) => {
+        setSelectedVenue(event.target.value);
+    };
+
+    const refreshSessionWithVenue = async () => {
+        if (selectedVenue) {
+            const venueId = Number(selectedVenue);
+            await refreshSession(venueId);
+        } else {
+            await refreshSession();
+        }
+    };
 
     if (error) {
         return (
@@ -27,7 +72,7 @@ export const QRCodeDisplay: React.FC = () => {
                     <IconButton
                         color="inherit"
                         size="small"
-                        onClick={refreshSession}
+                        onClick={() => refreshSession()}
                         aria-label="retry"
                     >
                         <RefreshIcon />
@@ -85,6 +130,40 @@ export const QRCodeDisplay: React.FC = () => {
                         Scan QR Code
                     </Typography>
 
+                    <Box sx={{ mb: 3, maxWidth: 400, mx: 'auto' }}>
+                        <FormControl fullWidth disabled={loading || venuesLoading}>
+                            <InputLabel id="venue-select-label">Select Venue</InputLabel>
+                            <Select
+                                labelId="venue-select-label"
+                                value={selectedVenue}
+                                label="Select Venue"
+                                onChange={handleVenueChange}
+                                sx={{ textAlign: 'left' }}
+                            >
+                                <MenuItem value="">
+                                    <em>No specific venue</em>
+                                </MenuItem>
+                                {venues.map((venue) => (
+                                    <MenuItem key={venue.id} value={venue.id.toString()}>
+                                        {venue.name} ({venue.institution_name})
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        
+                        {selectedVenue && (
+                            <Button 
+                                variant="contained" 
+                                color="primary"
+                                onClick={refreshSessionWithVenue}
+                                sx={{ mt: 1 }}
+                                disabled={loading}
+                            >
+                                Generate QR for Selected Venue
+                            </Button>
+                        )}
+                    </Box>
+
                     {loading ? (
                         <Box 
                             sx={{ 
@@ -127,7 +206,7 @@ export const QRCodeDisplay: React.FC = () => {
                             
                             <Timer 
                                 seconds={getRemainingTime()} 
-                                onComplete={refreshSession}
+                                onComplete={() => refreshSession()}
                             />
 
                             <Typography 
@@ -142,7 +221,7 @@ export const QRCodeDisplay: React.FC = () => {
                             </Typography>
 
                             <IconButton 
-                                onClick={refreshSession}
+                                onClick={() => refreshSession()}
                                 color="primary"
                                 aria-label="refresh QR code"
                                 sx={{

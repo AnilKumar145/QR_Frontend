@@ -12,6 +12,8 @@ import NotFound from './components/NotFound';
 import { AuthProvider, AuthContext } from './contexts/AuthContext';
 import { useContext } from 'react';
 import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
+import InstitutionsPage from './components/InstitutionsPage';
+import VenuesPage from './components/VenuesPage';
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
@@ -100,6 +102,22 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/admin/institutions" 
+              element={
+                <ProtectedRoute>
+                  <InstitutionsPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/venues" 
+              element={
+                <ProtectedRoute>
+                  <VenuesPage />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* 404 Route */}
             <Route path="*" element={<NotFound />} />
@@ -111,6 +129,7 @@ function App() {
 }
 
 export default App;
+
 
 
 

@@ -24,38 +24,65 @@ export class QRSessionError extends Error {
 }
 
 export const qrService = {
-    async getCurrentSession(): Promise<QRSession> {
+    async getCurrentSession(venueId?: number): Promise<QRSession> {
         try {
             console.log('Requesting new QR session...');
-            const response = await api.post('/qr-session/generate', null, {
-                params: {
-                    duration_minutes: 2
-                }
-            });
+            
+            let response;
+            
+            if (venueId !== undefined) {
+                // Use the venue-specific endpoint
+                console.log(`Using venue-specific endpoint for venue ID: ${venueId}`);
+                response = await api.post(`/qr-session/generate-for-venue/${venueId}`, null, {
+                    params: { duration_minutes: 2 }
+                });
+            } else {
+                // Use the general endpoint
+                console.log('Using general QR session endpoint');
+                response = await api.post('/qr-session/generate', null, {
+                    params: { duration_minutes: 2 }
+                });
+            }
             
             console.log('QR Session Response:', response.data);
             
-            if (!validateQRData(response.data)) {
+            if (!this.validateQRData(response.data)) {
                 console.error('Invalid QR data format:', response.data);
-                throw new QRSessionError('Invalid response format from server');
+                throw new Error('Invalid response format from server');
             }
             
             return response.data;
         } catch (error) {
-            console.error('QR Session Error:', error);
+            console.error('Error fetching QR session:', error);
+            
+            // Use AxiosError for better error handling
             if (error instanceof AxiosError) {
-                if (!error.response) {
-                    throw new QRSessionError('Network error - Please check your connection');
+                if (error.response) {
+                    // The request was made and the server responded with a status code
+                    // that falls out of the range of 2xx
+                    const errorMessage = error.response.data?.detail || 
+                                        error.response.data?.message || 
+                                        `Server error: ${error.response.status}`;
+                    throw new QRSessionError(errorMessage);
+                } else if (error.request) {
+                    // The request was made but no response was received
+                    throw new QRSessionError('No response received from server. Please check your connection.');
+                } else {
+                    // Something happened in setting up the request
+                    throw new QRSessionError(`Request error: ${error.message}`);
                 }
-                if (error.response.status === 404) {
-                    throw new QRSessionError('QR session endpoint not found');
-                }
-                if (error.response.status === 422) {
-                    throw new QRSessionError('Invalid request parameters');
-                }
-                throw new QRSessionError(error.response.data?.detail || 'Server error occurred');
             }
-            throw new QRSessionError('An unexpected error occurred. Please try again.');
+            
+            // For non-Axios errors, just rethrow
+            throw error;
         }
+    },
+    
+    validateQRData(data: unknown): data is QRSession {
+        if (typeof data !== 'object' || !data) return false;
+        const qrData = data as Record<string, unknown>;
+        return typeof qrData.session_id === 'string' &&
+               typeof qrData.qr_image === 'string' &&
+               typeof qrData.expires_at === 'string';
     }
 };
