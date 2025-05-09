@@ -6,7 +6,8 @@ import {
   IconButton, 
   Box, 
   useTheme,
-  Tooltip
+  Tooltip,
+  useMediaQuery
 } from '@mui/material';
 import { 
   Menu as MenuIcon,
@@ -28,6 +29,7 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({
   const theme = useTheme();
   const navigate = useNavigate();
   const { user, logout } = useContext(AuthContext);
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleLogout = () => {
     logout();
@@ -54,7 +56,7 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({
           <MenuIcon />
         </IconButton>
         <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-          {title}
+          {isMobile ? 'Admin' : title}
         </Typography>
         
         {user && (
@@ -75,4 +77,5 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({
 };
 
 export default AdminHeader;
+
 

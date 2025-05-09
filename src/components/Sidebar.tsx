@@ -23,7 +23,7 @@ import {
   Login,
   Logout
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContextDefinition';
 import { useContext } from 'react';
 
@@ -35,8 +35,9 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, logout } = useContext(AuthContext);
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -51,6 +52,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     onClose();
   };
 
+  const drawerWidth = 240;
+
   return (
     <Drawer
       anchor="left"
@@ -58,10 +61,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
       onClose={onClose}
       variant={isMobile ? "temporary" : "persistent"}
       sx={{
-        width: 240,
+        width: drawerWidth,
         flexShrink: 0,
         '& .MuiDrawer-paper': {
-          width: 240,
+          width: drawerWidth,
           boxSizing: 'border-box',
           background: theme.palette.background.paper,
           borderRight: `1px solid ${theme.palette.divider}`,
@@ -75,7 +78,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
       </Box>
       <Divider />
       <List>
-        <ListItemButton onClick={() => handleNavigation('/')}>
+        <ListItemButton 
+          onClick={() => handleNavigation('/')}
+          selected={location.pathname === '/'}
+        >
           <ListItemIcon>
             <QrCode color="primary" />
           </ListItemIcon>
@@ -154,6 +160,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     </Drawer>
   );
 };
+
 
 
 
