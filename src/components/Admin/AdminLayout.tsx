@@ -152,16 +152,28 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         sx={{
           flexGrow: 1,
           p: 3,
-          width: '100%',
+          width: { xs: '100%', sm: `calc(100% - ${open ? drawerWidth : 0}px)` },
           ml: { sm: open ? `${drawerWidth}px` : 0 },
           transition: theme.transitions.create(['margin', 'width'], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
           }),
           mt: '64px', // Height of AppBar
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
         }}
       >
-        <Container maxWidth="xl" sx={{ mt: 2, mx: 'auto' }}>
+        <Container 
+          maxWidth="xl" 
+          sx={{ 
+            mt: 2, 
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
+          }}
+        >
           {children}
         </Container>
       </Box>
@@ -170,3 +182,4 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 };
 
 export default AdminLayout;
+

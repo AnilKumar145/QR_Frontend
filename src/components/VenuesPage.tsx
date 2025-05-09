@@ -23,7 +23,7 @@ interface Venue {
   institution_name?: string;
   latitude: number | null;
   longitude: number | null;
-  geofence_radius: number | null;
+  radius_meters: number | null;
 }
 
 const VenuesPage: React.FC = () => {
@@ -39,7 +39,7 @@ const VenuesPage: React.FC = () => {
     institution_id: '',
     latitude: '',
     longitude: '',
-    geofence_radius: ''
+    radius_meters: ''
   });
 
   const fetchInstitutions = useCallback(async () => {
@@ -86,7 +86,7 @@ const VenuesPage: React.FC = () => {
         institution_id: venue.institution_id.toString(),
         latitude: venue.latitude?.toString() || '',
         longitude: venue.longitude?.toString() || '',
-        geofence_radius: venue.geofence_radius?.toString() || ''
+        radius_meters: venue.radius_meters?.toString() || ''
       });
     } else {
       setCurrentVenue(null);
@@ -95,7 +95,7 @@ const VenuesPage: React.FC = () => {
         institution_id: institutions.length > 0 ? institutions[0].id.toString() : '',
         latitude: '',
         longitude: '',
-        geofence_radius: ''
+        radius_meters: ''
       });
     }
     setOpenDialog(true);
@@ -122,7 +122,7 @@ const VenuesPage: React.FC = () => {
         institution_id: parseInt(formData.institution_id),
         latitude: formData.latitude ? parseFloat(formData.latitude) : null,
         longitude: formData.longitude ? parseFloat(formData.longitude) : null,
-        geofence_radius: formData.geofence_radius ? parseFloat(formData.geofence_radius) : null
+        radius_meters: formData.radius_meters ? parseFloat(formData.radius_meters) : null
       };
 
       if (currentVenue) {
@@ -170,7 +170,7 @@ const VenuesPage: React.FC = () => {
 
   return (
     <AdminLayout>
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h4">Venues</Typography>
           <Button 
@@ -207,7 +207,7 @@ const VenuesPage: React.FC = () => {
                   <TableCell>Name</TableCell>
                   <TableCell>Institution</TableCell>
                   <TableCell>Coordinates</TableCell>
-                  <TableCell>Geofence Radius (m)</TableCell>
+                  <TableCell>Radius (m)</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -229,7 +229,7 @@ const VenuesPage: React.FC = () => {
                           : 'N/A'}
                       </TableCell>
                       <TableCell>
-                        {venue.geofence_radius ? venue.geofence_radius.toFixed(1) : 'N/A'}
+                        {venue.radius_meters ? venue.radius_meters.toFixed(1) : 'N/A'}
                       </TableCell>
                       <TableCell>
                         <IconButton 
@@ -319,12 +319,12 @@ const VenuesPage: React.FC = () => {
             
             <TextField
               margin="dense"
-              name="geofence_radius"
-              label="Geofence Radius (meters)"
+              name="radius_meters"
+              label="Radius (meters)"
               type="number"
               fullWidth
               variant="outlined"
-              value={formData.geofence_radius}
+              value={formData.radius_meters}
               onChange={handleInputChange}
               inputProps={{ min: 0, step: 'any' }}
               helperText="Distance in meters from the coordinates where attendance is allowed"
@@ -347,5 +347,7 @@ const VenuesPage: React.FC = () => {
 };
 
 export default VenuesPage;
+
+
 
 

@@ -13,9 +13,10 @@ import AdminLayout from './Admin/AdminLayout';
 interface Institution {
   id: number;
   name: string;
-  address: string;
-  latitude: number | null;
-  longitude: number | null;
+  city: string;
+  address?: string;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 const InstitutionsPage: React.FC = () => {
@@ -27,6 +28,7 @@ const InstitutionsPage: React.FC = () => {
   const [currentInstitution, setCurrentInstitution] = useState<Institution | null>(null);
   const [formData, setFormData] = useState({
     name: '',
+    city: '',
     address: '',
     latitude: '',
     longitude: ''
@@ -57,6 +59,7 @@ const InstitutionsPage: React.FC = () => {
       setCurrentInstitution(institution);
       setFormData({
         name: institution.name,
+        city: institution.city || '',
         address: institution.address || '',
         latitude: institution.latitude?.toString() || '',
         longitude: institution.longitude?.toString() || ''
@@ -65,6 +68,7 @@ const InstitutionsPage: React.FC = () => {
       setCurrentInstitution(null);
       setFormData({
         name: '',
+        city: '',
         address: '',
         latitude: '',
         longitude: ''
@@ -86,6 +90,7 @@ const InstitutionsPage: React.FC = () => {
     try {
       const payload = {
         name: formData.name,
+        city: formData.city,
         address: formData.address,
         latitude: formData.latitude ? parseFloat(formData.latitude) : null,
         longitude: formData.longitude ? parseFloat(formData.longitude) : null
@@ -129,23 +134,23 @@ const InstitutionsPage: React.FC = () => {
     }
   };
 
-  // Helper function to extract city from address
-  const getCity = (address: string | null): string => {
-    if (!address) return 'N/A';
-    
-    // Try to extract city from address
-    // This is a simple implementation - you might need to adjust based on your address format
-    const parts = address.split(',');
-    if (parts.length > 1) {
-      return parts[parts.length - 2].trim();
-    }
-    
-    return address.split(' ')[0] || 'N/A';
-  };
+  // Remove the unused getCity function
+  // const getCity = (address: string | null): string => {
+  //   if (!address) return 'N/A';
+  //   
+  //   // Try to extract city from address
+  //   // This is a simple implementation - you might need to adjust based on your address format
+  //   const parts = address.split(',');
+  //   if (parts.length > 1) {
+  //     return parts[parts.length - 2].trim();
+  //   }
+  //   
+  //   return address.split(' ')[0] || 'N/A';
+  // };
 
   return (
     <AdminLayout>
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h4">Institutions</Typography>
           <Button 
@@ -174,15 +179,13 @@ const InstitutionsPage: React.FC = () => {
                 <TableRow>
                   <TableCell>Name</TableCell>
                   <TableCell>City</TableCell>
-                  <TableCell>Address</TableCell>
-                  <TableCell>Coordinates</TableCell>
                   <TableCell align="center">Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {institutions.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} align="center">
+                    <TableCell colSpan={3} align="center">
                       No institutions found. Add your first institution.
                     </TableCell>
                   </TableRow>
@@ -190,13 +193,7 @@ const InstitutionsPage: React.FC = () => {
                   institutions.map((institution) => (
                     <TableRow key={institution.id}>
                       <TableCell><strong>{institution.name}</strong></TableCell>
-                      <TableCell>{getCity(institution.address)}</TableCell>
-                      <TableCell>{institution.address || 'N/A'}</TableCell>
-                      <TableCell>
-                        {institution.latitude && institution.longitude 
-                          ? `${institution.latitude.toFixed(6)}, ${institution.longitude.toFixed(6)}`
-                          : 'N/A'}
-                      </TableCell>
+                      <TableCell>{institution.city || 'N/A'}</TableCell>
                       <TableCell align="center">
                         <IconButton 
                           color="primary" 
@@ -237,6 +234,18 @@ const InstitutionsPage: React.FC = () => {
               fullWidth
               variant="outlined"
               value={formData.name}
+              onChange={handleInputChange}
+              required
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              margin="dense"
+              name="city"
+              label="City"
+              type="text"
+              fullWidth
+              variant="outlined"
+              value={formData.city}
               onChange={handleInputChange}
               required
               sx={{ mb: 2 }}
@@ -294,6 +303,9 @@ const InstitutionsPage: React.FC = () => {
 };
 
 export default InstitutionsPage;
+
+
+
 
 
 
