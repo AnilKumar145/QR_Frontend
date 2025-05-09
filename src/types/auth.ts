@@ -4,6 +4,9 @@ export interface User {
   email: string;
   name?: string;
   role?: string;
+  username?: string;
+  is_admin?: boolean;
+  is_active?: boolean;
   institution_id?: string;
   created_at?: string;
   updated_at?: string;
@@ -18,3 +21,4 @@ export interface AuthContextType {
   loading: boolean;
   error: string | null;
 }
+

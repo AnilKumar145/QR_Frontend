@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { api } from '../api';
 import { User } from '../types/auth';
 import { AuthContext } from './AuthContextDefinition';
@@ -49,41 +50,68 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     checkAuthStatus();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (username: string, password: string): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+    
     try {
-      setLoading(true);
-      setError(null);
+      // Use FormData as the backend expects form data, not JSON
+      const formData = new FormData();
+      formData.append('username', username);
+      formData.append('password', password);
       
-      const response = await api.post('/auth/login', { email, password });
+      // Make direct request to ensure correct format
+      const response = await axios.post(
+        'https://qr-backend-1-pq5i.onrender.com/api/v1/admin/login',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        }
+      );
       
       if (response.data && response.data.access_token) {
-        // Save token
-        const newToken = response.data.access_token;
-        localStorage.setItem('authToken', newToken);
-        setToken(newToken);
-        
-        // Set auth header
-        api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
-        
-        // Get user info
-        const userResponse = await api.get('/auth/me');
-        setUser(userResponse.data);
+        // Store the token
+        const token = response.data.access_token;
+        localStorage.setItem('authToken', token);
+        setToken(token);
         setIsAuthenticated(true);
+        
+        // Create a user object that matches the User interface
+        setUser({
+          id: response.data.user_id?.toString() || '1', // Use user_id from response if available
+          email: username, // Using username as email since that's what we have
+          name: username, // Optional: set name to username
+          role: 'admin', // Set role to admin
+        });
+        
+        // Set auth header for future requests
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
         return true;
       } else {
-        setError('Login failed. Please check your credentials.');
+        setError('Invalid response from server');
         return false;
       }
-    } catch (err: unknown) {
-      console.error('Login error:', err);
+    } catch (error) {
+      console.error('Login error:', error);
       
-      // Type guard to safely access properties
-      if (err && typeof err === 'object' && 'response' in err) {
-        const errorResponse = err.response as { data?: { detail?: string } } | undefined;
-        setError(errorResponse?.data?.detail || 'Login failed. Please try again.');
+      // Handle different error types
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          // Server responded with error
+          setError(error.response.data?.detail || 'Login failed. Please check your credentials.');
+        } else if (error.request) {
+          // No response received
+          setError('No response from server. Please check your connection.');
+        } else {
+          // Request setup error
+          setError(`Error: ${error.message}`);
+        }
       } else {
-        setError('Login failed. Please try again.');
+        // Non-axios error
+        setError('An unexpected error occurred');
       }
       
       return false;
