@@ -161,7 +161,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           mt: '64px', // Height of AppBar
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
+          alignItems: 'center', // Centers content horizontally
         }}
       >
         <Container 
@@ -171,7 +171,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             width: '100%',
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center'
+            alignItems: 'center' // Centers content horizontally
           }}
         >
           {children}
@@ -182,4 +182,5 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 };
 
 export default AdminLayout;
+
 

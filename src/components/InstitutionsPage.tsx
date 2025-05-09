@@ -13,8 +13,8 @@ import AdminLayout from './Admin/AdminLayout';
 interface Institution {
   id: number;
   name: string;
-  city: string;
-  address?: string;
+  city: string | null; // Make nullable to handle possible null values
+  address?: string | null;
   latitude?: number | null;
   longitude?: number | null;
 }
@@ -303,6 +303,7 @@ const InstitutionsPage: React.FC = () => {
 };
 
 export default InstitutionsPage;
+
 
 
 

@@ -23,7 +23,7 @@ interface Venue {
   institution_name?: string;
   latitude: number | null;
   longitude: number | null;
-  radius_meters: number | null;
+  radius_meters: number | null; // Not geofence_radius
 }
 
 const VenuesPage: React.FC = () => {
@@ -39,7 +39,7 @@ const VenuesPage: React.FC = () => {
     institution_id: '',
     latitude: '',
     longitude: '',
-    radius_meters: ''
+    radius_meters: '' // Not geofence_radius
   });
 
   const fetchInstitutions = useCallback(async () => {
@@ -86,7 +86,7 @@ const VenuesPage: React.FC = () => {
         institution_id: venue.institution_id.toString(),
         latitude: venue.latitude?.toString() || '',
         longitude: venue.longitude?.toString() || '',
-        radius_meters: venue.radius_meters?.toString() || ''
+        radius_meters: venue.radius_meters?.toString() || '' // Not geofence_radius
       });
     } else {
       setCurrentVenue(null);
@@ -95,7 +95,7 @@ const VenuesPage: React.FC = () => {
         institution_id: institutions.length > 0 ? institutions[0].id.toString() : '',
         latitude: '',
         longitude: '',
-        radius_meters: ''
+        radius_meters: '' // Not geofence_radius
       });
     }
     setOpenDialog(true);
@@ -122,7 +122,7 @@ const VenuesPage: React.FC = () => {
         institution_id: parseInt(formData.institution_id),
         latitude: formData.latitude ? parseFloat(formData.latitude) : null,
         longitude: formData.longitude ? parseFloat(formData.longitude) : null,
-        radius_meters: formData.radius_meters ? parseFloat(formData.radius_meters) : null
+        radius_meters: formData.radius_meters ? parseFloat(formData.radius_meters) : null // Not geofence_radius
       };
 
       if (currentVenue) {
@@ -208,7 +208,7 @@ const VenuesPage: React.FC = () => {
                   <TableCell>Institution</TableCell>
                   <TableCell>Coordinates</TableCell>
                   <TableCell>Radius (m)</TableCell>
-                  <TableCell>Actions</TableCell>
+                  <TableCell align="center">Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -229,13 +229,14 @@ const VenuesPage: React.FC = () => {
                           : 'N/A'}
                       </TableCell>
                       <TableCell>
-                        {venue.radius_meters ? venue.radius_meters.toFixed(1) : 'N/A'}
+                        {venue.radius_meters ? venue.radius_meters.toFixed(1) : 'N/A'} {/* Not geofence_radius */}
                       </TableCell>
-                      <TableCell>
+                      <TableCell align="center">
                         <IconButton 
                           color="primary" 
                           onClick={() => handleOpenDialog(venue)}
                           size="small"
+                          title="Edit"
                         >
                           <EditIcon />
                         </IconButton>
@@ -243,6 +244,7 @@ const VenuesPage: React.FC = () => {
                           color="error" 
                           onClick={() => handleDelete(venue.id)}
                           size="small"
+                          title="Delete"
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -319,12 +321,12 @@ const VenuesPage: React.FC = () => {
             
             <TextField
               margin="dense"
-              name="radius_meters"
+              name="radius_meters" // Not geofence_radius
               label="Radius (meters)"
               type="number"
               fullWidth
               variant="outlined"
-              value={formData.radius_meters}
+              value={formData.radius_meters} // Not geofence_radius
               onChange={handleInputChange}
               inputProps={{ min: 0, step: 'any' }}
               helperText="Distance in meters from the coordinates where attendance is allowed"
@@ -347,6 +349,7 @@ const VenuesPage: React.FC = () => {
 };
 
 export default VenuesPage;
+
 
 
 
