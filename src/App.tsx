@@ -14,6 +14,7 @@ import { useContext } from 'react';
 import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
 import InstitutionsPage from './components/InstitutionsPage';
 import VenuesPage from './components/VenuesPage';
+import { Layout } from './components/Layout';
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
@@ -57,68 +58,72 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
-            <Route path="/" element={<QRCodeDisplay />} />
+            <Route path="/" element={<Layout />}>
+              <Route index element={<QRCodeDisplay />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              
+              {/* Protected Routes */}
+              <Route 
+                path="/admin/dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/selfies" 
+                element={
+                  <ProtectedRoute>
+                    <StudentSelfiesPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/attendance" 
+                element={
+                  <ProtectedRoute>
+                    <AttendanceRecordsPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/flagged-logs" 
+                element={
+                  <ProtectedRoute>
+                    <FlaggedLogsPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/statistics" 
+                element={
+                  <ProtectedRoute>
+                    <StatisticsPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/institutions" 
+                element={
+                  <ProtectedRoute>
+                    <InstitutionsPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/venues" 
+                element={
+                  <ProtectedRoute>
+                    <VenuesPage />
+                  </ProtectedRoute>
+                } 
+              />
+            </Route>
+            
+            {/* Routes outside the layout */}
             <Route path="/attendance/:sessionId" element={<AttendanceMarking />} />
             <Route path="/mark-attendance/:sessionId" element={<AttendanceMarking />} />
-            <Route path="/admin/login" element={<AdminLogin />} />
-            
-            {/* Protected Routes */}
-            <Route 
-              path="/admin/dashboard" 
-              element={
-                <ProtectedRoute>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/selfies" 
-              element={
-                <ProtectedRoute>
-                  <StudentSelfiesPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/attendance" 
-              element={
-                <ProtectedRoute>
-                  <AttendanceRecordsPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/flagged-logs" 
-              element={
-                <ProtectedRoute>
-                  <FlaggedLogsPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/statistics" 
-              element={
-                <ProtectedRoute>
-                  <StatisticsPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/institutions" 
-              element={
-                <ProtectedRoute>
-                  <InstitutionsPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/venues" 
-              element={
-                <ProtectedRoute>
-                  <VenuesPage />
-                </ProtectedRoute>
-              } 
-            />
             
             {/* 404 Route */}
             <Route path="*" element={<NotFound />} />
@@ -130,6 +135,8 @@ function App() {
 }
 
 export default App;
+
+
 
 
 

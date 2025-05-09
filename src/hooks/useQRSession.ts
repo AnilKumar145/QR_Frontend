@@ -12,9 +12,10 @@ interface QRSession {
 
 export const useQRSession = () => {
     const [session, setSession] = useState<QRSession | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [lastRefresh, setLastRefresh] = useState(Date.now());
+    const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
 
     const fetchSession = useCallback(async (venueId?: number) => {
         try {
@@ -30,8 +31,9 @@ export const useQRSession = () => {
                     params: { duration_minutes: 2 }
                 });
             } else {
-                // Use the general endpoint
-                console.log('Using general QR session endpoint');
+                // If no venue is selected, we'll use the institution-wide endpoint
+                // This is still venue-based but uses the default institution venue
+                console.log('Using institution-wide QR session endpoint');
                 response = await api.post('/qr-session/generate', null, {
                     params: { duration_minutes: 2 }
                 });
@@ -40,6 +42,7 @@ export const useQRSession = () => {
             if (response.data) {
                 setSession(response.data);
                 setLastRefresh(Date.now());
+                setAutoRefreshEnabled(true); // Enable auto-refresh after manual generation
             } else {
                 setError('Failed to generate QR code. Please try again.');
             }
@@ -60,17 +63,23 @@ export const useQRSession = () => {
         }
     }, []);
 
-    // Initial fetch on component mount
+    // Set up auto-refresh only after manual generation
     useEffect(() => {
-        fetchSession();
+        let intervalId: number | null = null;
         
-        // Set up auto-refresh every 2 minutes
-        const intervalId = setInterval(() => {
-            fetchSession();
-        }, 2 * 60 * 1000);
+        if (autoRefreshEnabled && session) {
+            intervalId = window.setInterval(() => {
+                // Use the same venue ID for auto-refresh
+                fetchSession(session.venue_id);
+            }, 2 * 60 * 1000); // 2 minutes
+        }
         
-        return () => clearInterval(intervalId);
-    }, [fetchSession]);
+        return () => {
+            if (intervalId !== null) {
+                clearInterval(intervalId);
+            }
+        };
+    }, [autoRefreshEnabled, fetchSession, session]);
 
     // Calculate remaining time until refresh
     const getRemainingTime = useCallback(() => {
@@ -87,5 +96,7 @@ export const useQRSession = () => {
         refreshSession: fetchSession
     };
 };
+
+
 
 
