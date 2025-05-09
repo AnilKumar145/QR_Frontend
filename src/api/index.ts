@@ -1,7 +1,16 @@
 import axios from 'axios';
 
+// Use a CORS proxy for development if needed
+const useCorsProxy = import.meta.env.VITE_USE_CORS_PROXY === 'true';
+const corsProxyUrl = 'https://cors-anywhere.herokuapp.com/';
+
 // Use environment variable for backend URL with fallback
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://qr-backend-1-pq5i.onrender.com/api/v1';
+let API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://qr-backend-1-pq5i.onrender.com/api/v1';
+
+// Add CORS proxy if needed
+if (useCorsProxy) {
+  API_BASE_URL = corsProxyUrl + API_BASE_URL;
+}
 
 export const api = axios.create({
     baseURL: API_BASE_URL,
