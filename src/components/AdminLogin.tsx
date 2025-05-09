@@ -1,8 +1,7 @@
-import React, { useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, TextField, Typography, Alert, Container, Paper, CircularProgress, Fade } from '@mui/material';
-import { AuthContext } from '../contexts/AuthContext';
+import { AuthContext } from '../contexts/AuthContextDefinition';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 const AdminLogin: React.FC = () => {
@@ -27,35 +26,24 @@ const AdminLogin: React.FC = () => {
     setLoading(true);
     
     try {
-      // Prepare form-urlencoded data as backend expects OAuth2PasswordRequestForm
-      const params = new URLSearchParams();
-      params.append('username', username);
-      params.append('password', password);
-
-      // Use the full backend URL
-      const response = await axios.post('https://qr-backend-1-pq5i.onrender.com/api/v1/admin/login', params, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      });
-
-      const token = response.data.access_token;
-      login(token); // Use context login to set token
+      // Use the login function from AuthContext
+      const success = await login(username, password);
       
-      // Show success message before redirecting
-      setSuccess(true);
-      
-      // Redirect after a short delay to show the success message
-      setTimeout(() => {
-        navigate('/admin/dashboard');
-      }, 1500);
-      
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err) && err.response?.data?.detail) {
-        setError(err.response.data.detail);
+      if (success) {
+        // Show success message before redirecting
+        setSuccess(true);
+        
+        // Redirect after a short delay to show the success message
+        setTimeout(() => {
+          navigate('/admin/dashboard');
+        }, 1500);
       } else {
-        setError('Login failed');
+        setError('Login failed. Please check your credentials.');
       }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Login failed. Please try again.');
+    } finally {
       setLoading(false);
     }
   };

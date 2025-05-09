@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import axios from 'axios';
-import { AuthContext } from '../contexts/AuthContext';
+import { AuthContext } from '../contexts/AuthContextDefinition';
 import { useNavigate } from 'react-router-dom';
 import {
   Box, 
@@ -59,7 +59,7 @@ interface SummaryStats {
 }
 
 const AdminDashboard: React.FC = () => {
-  const { token, logout } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [flaggedLogs, setFlaggedLogs] = useState<FlaggedLog[]>([]);
   const [error, setError] = useState('');
@@ -74,6 +74,7 @@ const AdminDashboard: React.FC = () => {
 
   // Add function to fetch statistics
   const fetchStatistics = React.useCallback(async () => {
+    const token = localStorage.getItem('authToken');
     if (!token) return;
     
     try {
@@ -97,13 +98,19 @@ const AdminDashboard: React.FC = () => {
     } finally {
       setStatsLoading(false);
     }
-  }, [token]);
+  }, []);
 
   const handleViewStatistics = () => {
     navigate('/admin/statistics');
   };
 
   useEffect(() => {
+    if (!user) {
+      navigate('/admin/login');
+      return;
+    }
+
+    const token = localStorage.getItem('authToken');
     if (!token) {
       navigate('/admin/login');
       return;
@@ -135,9 +142,10 @@ const AdminDashboard: React.FC = () => {
     };
 
     fetchData();
-  }, [token, navigate, fetchStatistics]);
+  }, [user, navigate, fetchStatistics]);
 
   const handleRefresh = async () => {
+    const token = localStorage.getItem('authToken');
     if (!token) return;
     
     try {

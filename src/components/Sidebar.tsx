@@ -24,7 +24,7 @@ import {
   Logout as LogoutIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../contexts/AuthContext';
+import { AuthContext } from '../contexts/AuthContextDefinition';
 import { useContext } from 'react';
 
 interface SidebarProps {
@@ -154,4 +154,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     </Drawer>
   );
 };
+
+
 

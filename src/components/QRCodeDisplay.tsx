@@ -65,11 +65,17 @@ export const QRCodeDisplay: React.FC = () => {
             } catch (err) {
                 console.error('Error fetching venues:', err);
                 if (axios.isAxiosError(err)) {
-                    const errorMessage = err.response?.data?.detail || 
-                                        err.response?.status || 
-                                        err.message || 
-                                        'Unknown error';
-                    setVenueError(`Failed to load venues: ${errorMessage}`);
+                    // Check for the specific SQL error
+                    const errorDetail = err.response?.data?.detail || '';
+                    if (errorDetail.includes('Textual SQL expression')) {
+                        setVenueError('There is a database configuration issue. Please contact the administrator.');
+                    } else {
+                        const errorMessage = err.response?.data?.detail || 
+                                            err.response?.status || 
+                                            err.message || 
+                                            'Unknown error';
+                        setVenueError(`Failed to load venues: ${errorMessage}`);
+                    }
                 } else {
                     setVenueError('Failed to load venues. Please try again later.');
                 }

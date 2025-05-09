@@ -1,16 +1,7 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../api';
-import { AuthContextType, User } from '../types/auth';
-
-// Create the context
-export const AuthContext = createContext<AuthContextType>({
-  isAuthenticated: false,
-  user: null,
-  login: async () => false,
-  logout: () => {},
-  loading: false,
-  error: null
-});
+import { User } from '../types/auth';
+import { AuthContext } from './AuthContextDefinition';
 
 // Create the provider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -78,9 +69,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setError('Login failed. Please check your credentials.');
         return false;
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Login error:', err);
-      setError(err.response?.data?.detail || 'Login failed. Please try again.');
+      
+      // Type guard to safely access properties
+      if (err && typeof err === 'object' && 'response' in err) {
+        const errorResponse = err.response as { data?: { detail?: string } } | undefined;
+        setError(errorResponse?.data?.detail || 'Login failed. Please try again.');
+      } else {
+        setError('Login failed. Please try again.');
+      }
+      
       return false;
     } finally {
       setLoading(false);
@@ -105,3 +104,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </AuthContext.Provider>
   );
 };
+
