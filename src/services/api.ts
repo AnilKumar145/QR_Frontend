@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Use the environment variable if available, otherwise use the production URL
-const API_URL = process.env.REACT_APP_API_URL || 'https://qr-backend-p9m7.onrender.com/api/v1';
+// Use the deployed backend URL
+const API_URL = 'https://qr-backend-1-pq5i.onrender.com/api/v1';
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -35,4 +35,5 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 

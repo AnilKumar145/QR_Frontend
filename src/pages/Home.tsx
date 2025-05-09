@@ -19,7 +19,7 @@ import {
   Login
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../contexts/AuthContextDefinition';
+import { AuthContext } from '../contexts/AuthContext';
 
 export const Home: React.FC = () => {
   const theme = useTheme();

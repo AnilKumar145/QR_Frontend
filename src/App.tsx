@@ -9,8 +9,8 @@ import AttendanceRecordsPage from './components/AttendanceRecordsPage';
 import FlaggedLogsPage from './components/FlaggedLogsPage';
 import StatisticsPage from './components/StatisticsPage';
 import NotFound from './components/NotFound';
-import { AuthProvider } from './contexts/AuthContext.tsx';
-import { AuthContext } from './contexts/AuthContextDefinition';
+import { AuthProvider } from './contexts/AuthContext';
+import { AuthContext } from './contexts/AuthContext';
 import { useContext } from 'react';
 import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
 import InstitutionsPage from './components/InstitutionsPage';
@@ -136,6 +136,7 @@ function App() {
 }
 
 export default App;
+
 
 
 

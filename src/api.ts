@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// Create axios instance with base URL
+// Create axios instance with deployed backend URL
 export const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1',
+  baseURL: 'https://qr-backend-1-pq5i.onrender.com/api/v1',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
