@@ -6,7 +6,6 @@ import {
   IconButton, 
   Box, 
   useTheme,
-  Avatar,
   Tooltip
 } from '@mui/material';
 import { 
@@ -15,7 +14,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
-import { AuthContext } from '../contexts/AuthContextDefinition';
+import { AuthContext } from '../contexts/AuthContext';
 
 interface AdminHeaderProps {
   onMenuClick: () => void;
@@ -61,7 +60,7 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({
         {user && (
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Typography variant="body2" sx={{ mr: 2, display: { xs: 'none', sm: 'block' } }}>
-              {user.username || 'Admin'}
+              {user.email || 'Admin'}
             </Typography>
             <Tooltip title="Logout">
               <IconButton color="inherit" onClick={handleLogout}>
@@ -76,3 +75,4 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({
 };
 
 export default AdminHeader;
+

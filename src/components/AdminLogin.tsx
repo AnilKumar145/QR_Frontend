@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, TextField, Typography, Alert, Container, Paper, CircularProgress, Fade } from '@mui/material';
-import { AuthContext } from '../contexts/AuthContextDefinition';
+import { AuthContext } from '../contexts/AuthContext';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 const AdminLogin: React.FC = () => {

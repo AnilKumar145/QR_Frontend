@@ -9,16 +9,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(localStorage.getItem('authToken'));
 
   // Check if user is already logged in on mount
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const token = localStorage.getItem('authToken');
+        const storedToken = localStorage.getItem('authToken');
         
-        if (token) {
+        if (storedToken) {
+          setToken(storedToken);
           // Set auth header
-          api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
           
           // Verify token with backend
           const response = await api.get('/auth/me');
@@ -29,6 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } else {
             // Token invalid, remove it
             localStorage.removeItem('authToken');
+            setToken(null);
             delete api.defaults.headers.common['Authorization'];
           }
         }
@@ -36,6 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Auth check failed:', err);
         // Clear any invalid tokens
         localStorage.removeItem('authToken');
+        setToken(null);
         delete api.defaults.headers.common['Authorization'];
       } finally {
         setLoading(false);
@@ -54,10 +58,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (response.data && response.data.access_token) {
         // Save token
-        localStorage.setItem('authToken', response.data.access_token);
+        const newToken = response.data.access_token;
+        localStorage.setItem('authToken', newToken);
+        setToken(newToken);
         
         // Set auth header
-        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
+        api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
         
         // Get user info
         const userResponse = await api.get('/auth/me');
@@ -89,6 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     // Remove token
     localStorage.removeItem('authToken');
+    setToken(null);
     
     // Remove auth header
     delete api.defaults.headers.common['Authorization'];
@@ -99,9 +106,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, loading, error }}>
+    <AuthContext.Provider value={{ 
+      isAuthenticated, 
+      user, 
+      token,
+      login, 
+      logout, 
+      loading, 
+      error 
+    }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
+// Re-export the AuthContext for convenience
+export { AuthContext };

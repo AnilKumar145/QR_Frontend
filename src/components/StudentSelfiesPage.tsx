@@ -20,12 +20,14 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
-import SearchIcon from '@mui/icons-material/Search';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import LocationOffIcon from '@mui/icons-material/LocationOff';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import LogoutIcon from '@mui/icons-material/Logout';
+import { 
+  Search as SearchIcon,
+  ArrowBack as ArrowBackIcon,
+  LocationOn as LocationOnIcon,
+  LocationOff as LocationOffIcon,
+  Dashboard as DashboardIcon,
+  Logout as LogoutIcon
+} from '@mui/icons-material';
 import axios, { AxiosError } from 'axios';
 
 // Define the API response type
@@ -467,6 +469,7 @@ const StudentSelfiesPage: React.FC = () => {
 };
 
 export default StudentSelfiesPage;
+
 
 
 
