@@ -1,31 +1,34 @@
 import axios from 'axios';
 
-// Use the full backend URL
-const API_BASE_URL = 'https://qr-backend-1-pq5i.onrender.com/api/v1';
+// Make sure the base URL is correct
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://qr-backend-1-pq5i.onrender.com/api/v1';
 
 export const api = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 15000, // Increase timeout to 15 seconds
+    timeout: 15000, // 15 seconds timeout
     headers: {
         'Content-Type': 'application/json',
     }
 });
 
-// Add interceptor to include auth token for authenticated requests
+// Add request interceptor to log requests for debugging
 api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('adminToken');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
+    config => {
+        console.log(`API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, config);
         return config;
     },
-    (error) => Promise.reject(error)
+    error => {
+        console.error('API Request Error:', error);
+        return Promise.reject(error);
+    }
 );
 
 // Enhanced error handling
 api.interceptors.response.use(
-    response => response,
+    response => {
+        console.log(`API Response: ${response.status} ${response.config.url}`, response.data);
+        return response;
+    },
     error => {
         const errorDetails = {
             url: error.config?.url,
@@ -66,3 +69,5 @@ api.interceptors.response.use(
         );
     }
 );
+
+export default api;

@@ -19,13 +19,13 @@ import {
 import { Refresh as RefreshIcon } from '@mui/icons-material';
 import { Timer } from './Timer';
 import { useQRSession } from '../hooks/useQRSession';
-// Fix the import path to use the correct API service
-import { api } from '../api'; // Changed from '../services/api'
+import { api } from '../api';
+import axios from 'axios';
 
 interface Venue {
     id: number;
     name: string;
-    institution_name: string;
+    institution_name?: string;
 }
 
 export const QRCodeDisplay: React.FC = () => {
@@ -42,16 +42,31 @@ export const QRCodeDisplay: React.FC = () => {
             try {
                 setVenuesLoading(true);
                 setVenueError(null);
-                // Use the API service instead of direct axios call
-                const response = await api.get('/venues/list');
-                console.log('Venues fetched:', response.data);
-                setVenues(response.data);
-                if (response.data.length === 0) {
-                    setVenueError('No venues available. Please add venues in the admin panel.');
+                // Use the correct API endpoint from the backend
+                const response = await api.get('/admin/venues');
+                console.log('Venues API response:', response);
+                
+                if (response.data && Array.isArray(response.data)) {
+                    setVenues(response.data);
+                    if (response.data.length === 0) {
+                        setVenueError('No venues available. Please add venues in the admin panel.');
+                    }
+                } else {
+                    console.error('Unexpected venues data format:', response.data);
+                    setVenueError('Received invalid venue data format from server.');
                 }
             } catch (err) {
                 console.error('Error fetching venues:', err);
-                setVenueError('Failed to load venues. Please try again later.');
+                // Provide more detailed error information
+                if (axios.isAxiosError(err)) {
+                    const errorMessage = err.response?.data?.detail || 
+                                        err.response?.status || 
+                                        err.message || 
+                                        'Unknown error';
+                    setVenueError(`Failed to load venues: ${errorMessage}`);
+                } else {
+                    setVenueError('Failed to load venues. Please try again later.');
+                }
             } finally {
                 setVenuesLoading(false);
             }
@@ -141,8 +156,15 @@ export const QRCodeDisplay: React.FC = () => {
 
                     <Box sx={{ mb: 3, maxWidth: 400, mx: 'auto', width: '100%' }}>
                         {venueError && (
-                            <Alert severity="info" sx={{ mb: 2 }}>
+                            <Alert severity="warning" sx={{ mb: 2 }}>
                                 {venueError}
+                                <Button 
+                                    size="small" 
+                                    onClick={() => window.location.reload()} 
+                                    sx={{ ml: 1 }}
+                                >
+                                    Retry
+                                </Button>
                             </Alert>
                         )}
                         
@@ -177,6 +199,7 @@ export const QRCodeDisplay: React.FC = () => {
                         </Button>
                     </Box>
 
+                    {/* Always show QR code section, even if venues failed to load */}
                     {loading ? (
                         <Box 
                             sx={{ 

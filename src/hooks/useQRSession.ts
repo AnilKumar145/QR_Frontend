@@ -1,54 +1,90 @@
 import { useState, useEffect, useCallback } from 'react';
-import { QRSession, qrService } from '../services/qrService';
+import { api } from '../api';
+import axios from 'axios';
+
+interface QRSession {
+    session_id: string;
+    qr_image: string;
+    expires_at: string;
+    venue_id?: number;
+    venue_name?: string;
+}
 
 export const useQRSession = () => {
     const [session, setSession] = useState<QRSession | null>(null);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [lastRefresh, setLastRefresh] = useState(Date.now());
 
-    const fetchNewSession = useCallback(async (venueId?: number) => {
-        setLoading(true);
-        setError(null);
+    const fetchSession = useCallback(async (venueId?: number) => {
         try {
-            const newSession = await qrService.getCurrentSession(venueId);
-            setSession(newSession);
-            return true; // Indicate successful fetch
+            setLoading(true);
+            setError(null);
+            
+            let response;
+            
+            if (venueId !== undefined) {
+                // Use the venue-specific endpoint
+                console.log(`Using venue-specific endpoint for venue ID: ${venueId}`);
+                response = await api.post(`/qr-session/generate-for-venue/${venueId}`, null, {
+                    params: { duration_minutes: 2 }
+                });
+            } else {
+                // Use the general endpoint
+                console.log('Using general QR session endpoint');
+                response = await api.post('/qr-session/generate', null, {
+                    params: { duration_minutes: 2 }
+                });
+            }
+            
+            if (response.data) {
+                setSession(response.data);
+                setLastRefresh(Date.now());
+            } else {
+                setError('Failed to generate QR code. Please try again.');
+            }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to fetch QR session');
-            return false; // Indicate failed fetch
+            console.error('Error fetching QR session:', err);
+            
+            if (axios.isAxiosError(err)) {
+                const errorMessage = err.response?.data?.detail || 
+                                    err.response?.status || 
+                                    err.message || 
+                                    'Unknown error';
+                setError(`Failed to generate QR code: ${errorMessage}`);
+            } else {
+                setError('Failed to generate QR code. Please try again.');
+            }
         } finally {
             setLoading(false);
         }
     }, []);
 
+    // Initial fetch on component mount
     useEffect(() => {
-        // Initial fetch
-        fetchNewSession().then(success => {
-            if (success) {
-                // Only start interval if initial fetch was successful
-                const intervalId = setInterval(() => fetchNewSession(), 120000);
-                return () => clearInterval(intervalId);
-            }
-        });
-    }, [fetchNewSession]);
+        fetchSession();
+        
+        // Set up auto-refresh every 2 minutes
+        const intervalId = setInterval(() => {
+            fetchSession();
+        }, 2 * 60 * 1000);
+        
+        return () => clearInterval(intervalId);
+    }, [fetchSession]);
 
-    // Calculate remaining time
+    // Calculate remaining time until refresh
     const getRemainingTime = useCallback(() => {
-        if (!session?.expires_at) return 0;
-        
-        const expiryTime = new Date(session.expires_at).getTime();
-        const now = new Date().getTime();
-        const remaining = Math.max(0, Math.floor((expiryTime - now) / 1000));
-        
-        return remaining;
-    }, [session?.expires_at]);
+        const refreshInterval = 2 * 60 * 1000; // 2 minutes in milliseconds
+        const elapsed = Date.now() - lastRefresh;
+        return Math.max(0, refreshInterval - elapsed) / 1000;
+    }, [lastRefresh]);
 
     return {
         session,
         loading,
         error,
         getRemainingTime,
-        refreshSession: fetchNewSession
+        refreshSession: fetchSession
     };
 };
 
