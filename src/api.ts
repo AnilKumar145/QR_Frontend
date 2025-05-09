@@ -1,8 +1,11 @@
 import axios from 'axios';
 
+// Use environment variable for backend URL with fallback
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://qr-backend-1-pq5i.onrender.com/api/v1';
+
 // Create axios instance with deployed backend URL
 export const api = axios.create({
-  baseURL: 'https://qr-backend-1-pq5i.onrender.com/api/v1',
+  baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -38,3 +41,4 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+

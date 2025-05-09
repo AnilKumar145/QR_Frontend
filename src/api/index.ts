@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Use the deployed backend URL
-const API_BASE_URL = 'https://qr-backend-1-pq5i.onrender.com/api/v1';
+// Use environment variable for backend URL with fallback
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://qr-backend-1-pq5i.onrender.com/api/v1';
 
 export const api = axios.create({
     baseURL: API_BASE_URL,
