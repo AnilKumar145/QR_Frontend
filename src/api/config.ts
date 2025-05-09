@@ -1,3 +1,4 @@
+// Use your existing backend URL on Render
 export const API_BASE_URL = 'https://qr-backend-1-pq5i.onrender.com/api/v1';
 
 export const apiConfig = {
@@ -8,6 +9,5 @@ export const apiConfig = {
     },
     withCredentials: true,
 };
-
 
 
