@@ -129,6 +129,20 @@ const InstitutionsPage: React.FC = () => {
     }
   };
 
+  // Helper function to extract city from address
+  const getCity = (address: string | null): string => {
+    if (!address) return 'N/A';
+    
+    // Try to extract city from address
+    // This is a simple implementation - you might need to adjust based on your address format
+    const parts = address.split(',');
+    if (parts.length > 1) {
+      return parts[parts.length - 2].trim();
+    }
+    
+    return address.split(' ')[0] || 'N/A';
+  };
+
   return (
     <AdminLayout>
       <Box sx={{ p: 3 }}>
@@ -159,33 +173,36 @@ const InstitutionsPage: React.FC = () => {
               <TableHead>
                 <TableRow>
                   <TableCell>Name</TableCell>
+                  <TableCell>City</TableCell>
                   <TableCell>Address</TableCell>
                   <TableCell>Coordinates</TableCell>
-                  <TableCell>Actions</TableCell>
+                  <TableCell align="center">Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {institutions.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} align="center">
+                    <TableCell colSpan={5} align="center">
                       No institutions found. Add your first institution.
                     </TableCell>
                   </TableRow>
                 ) : (
                   institutions.map((institution) => (
                     <TableRow key={institution.id}>
-                      <TableCell>{institution.name}</TableCell>
+                      <TableCell><strong>{institution.name}</strong></TableCell>
+                      <TableCell>{getCity(institution.address)}</TableCell>
                       <TableCell>{institution.address || 'N/A'}</TableCell>
                       <TableCell>
                         {institution.latitude && institution.longitude 
                           ? `${institution.latitude.toFixed(6)}, ${institution.longitude.toFixed(6)}`
                           : 'N/A'}
                       </TableCell>
-                      <TableCell>
+                      <TableCell align="center">
                         <IconButton 
                           color="primary" 
                           onClick={() => handleOpenDialog(institution)}
                           size="small"
+                          title="Edit"
                         >
                           <EditIcon />
                         </IconButton>
@@ -193,6 +210,7 @@ const InstitutionsPage: React.FC = () => {
                           color="error" 
                           onClick={() => handleDelete(institution.id)}
                           size="small"
+                          title="Delete"
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -276,5 +294,7 @@ const InstitutionsPage: React.FC = () => {
 };
 
 export default InstitutionsPage;
+
+
 
 

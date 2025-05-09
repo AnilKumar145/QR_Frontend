@@ -58,8 +58,7 @@ export const Layout: React.FC = () => {
         sx={{
           flexGrow: 1,
           p: 3,
-          width: { sm: `calc(100% - ${sidebarOpen ? 240 : 0}px)` },
-          ml: { sm: sidebarOpen ? '240px' : 0 },
+          width: '100%', // Use full width
           mt: '64px', // AppBar height
           transition: theme.transitions.create(['margin', 'width'], {
             easing: theme.transitions.easing.sharp,
@@ -67,7 +66,7 @@ export const Layout: React.FC = () => {
           }),
         }}
       >
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Container maxWidth="lg" sx={{ py: 4, mx: 'auto' }}>
           <Outlet />
         </Container>
       </Box>

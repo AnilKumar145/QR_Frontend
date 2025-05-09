@@ -58,7 +58,9 @@ export const Home: React.FC = () => {
             sm: 'repeat(2, 1fr)',
             md: 'repeat(3, 1fr)'
           },
-          gap: 4
+          gap: 3,
+          maxWidth: '1200px',
+          mx: 'auto'
         }}
       >
         {/* QR Code Generator Card */}
@@ -66,6 +68,9 @@ export const Home: React.FC = () => {
           sx={{ 
             cursor: 'pointer',
             transition: 'transform 0.2s, box-shadow 0.2s',
+            maxWidth: '350px',
+            height: '100%',
+            mx: 'auto',
             '&:hover': {
               transform: 'translateY(-4px)',
               boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
@@ -106,6 +111,9 @@ export const Home: React.FC = () => {
             sx={{ 
               cursor: 'pointer',
               transition: 'transform 0.2s, box-shadow 0.2s',
+              maxWidth: '350px',
+              height: '100%',
+              mx: 'auto',
               '&:hover': {
                 transform: 'translateY(-4px)',
                 boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
@@ -148,6 +156,9 @@ export const Home: React.FC = () => {
               sx={{ 
                 cursor: 'pointer',
                 transition: 'transform 0.2s, box-shadow 0.2s',
+                maxWidth: '350px',
+                height: '100%',
+                mx: 'auto',
                 '&:hover': {
                   transform: 'translateY(-4px)',
                   boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
@@ -186,6 +197,9 @@ export const Home: React.FC = () => {
               sx={{ 
                 cursor: 'pointer',
                 transition: 'transform 0.2s, box-shadow 0.2s',
+                maxWidth: '350px',
+                height: '100%',
+                mx: 'auto',
                 '&:hover': {
                   transform: 'translateY(-4px)',
                   boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
@@ -224,6 +238,9 @@ export const Home: React.FC = () => {
               sx={{ 
                 cursor: 'pointer',
                 transition: 'transform 0.2s, box-shadow 0.2s',
+                maxWidth: '350px',
+                height: '100%',
+                mx: 'auto',
                 '&:hover': {
                   transform: 'translateY(-4px)',
                   boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
@@ -262,6 +279,9 @@ export const Home: React.FC = () => {
               sx={{ 
                 cursor: 'pointer',
                 transition: 'transform 0.2s, box-shadow 0.2s',
+                maxWidth: '350px',
+                height: '100%',
+                mx: 'auto',
                 '&:hover': {
                   transform: 'translateY(-4px)',
                   boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
@@ -300,6 +320,9 @@ export const Home: React.FC = () => {
               sx={{ 
                 cursor: 'pointer',
                 transition: 'transform 0.2s, box-shadow 0.2s',
+                maxWidth: '350px',
+                height: '100%',
+                mx: 'auto',
                 '&:hover': {
                   transform: 'translateY(-4px)',
                   boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
