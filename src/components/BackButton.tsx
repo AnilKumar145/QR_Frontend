@@ -1,6 +1,5 @@
 import React from 'react';
 import { IconButton, Tooltip } from '@mui/material';
-// For MUI v7, import icons from the main package
 import { ArrowBack } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 

@@ -1,26 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import {
-    Box,
-    Card,
-    CardContent,
-    Typography,
-    IconButton,
-    CircularProgress,
-    Alert,
-    useTheme,
-    useMediaQuery,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    SelectChangeEvent,
-    Button
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  Card, 
+  CardContent, 
+  CircularProgress,
+  Alert,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
+  SelectChangeEvent,
+  IconButton,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
-import { Refresh as RefreshIcon } from '@mui/icons-material';
-import { Timer } from './Timer';
-import { useQRSession } from '../hooks/useQRSession';
+import { 
+  Refresh as RefreshIcon
+} from '@mui/icons-material';
 import { api } from '../api';
 import axios from 'axios';
+import { useQRSession } from '../hooks/useQRSession';
+import { Timer } from './Timer';
 
 interface Venue {
     id: number;
