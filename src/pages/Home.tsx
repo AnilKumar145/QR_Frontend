@@ -11,12 +11,12 @@ import {
   Avatar
 } from '@mui/material';
 import { 
-  QrCode as QrCodeIcon,
-  School as SchoolIcon,
-  LocationOn as LocationOnIcon,
-  People as PeopleIcon,
-  Photo as PhotoIcon,
-  Login as LoginIcon
+  QrCode,
+  School,
+  LocationOn,
+  People,
+  Photo,
+  Login
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContextDefinition';
@@ -31,7 +31,7 @@ export const Home: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box sx={{ mb: 4, textAlign: 'center' }}>
         <Typography 
           variant="h3" 
@@ -64,14 +64,11 @@ export const Home: React.FC = () => {
         {/* QR Code Generator Card */}
         <Card 
           sx={{ 
-            height: '100%', 
-            display: 'flex', 
-            flexDirection: 'column',
             cursor: 'pointer',
-            transition: 'all 0.3s ease',
+            transition: 'transform 0.2s, box-shadow 0.2s',
             '&:hover': {
-              transform: 'translateY(-8px)',
-              boxShadow: '0 12px 20px rgba(0, 0, 0, 0.1)'
+              transform: 'translateY(-4px)',
+              boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
             }
           }}
           onClick={() => handleCardClick('/qr-generator')}
@@ -79,7 +76,7 @@ export const Home: React.FC = () => {
           <CardContent sx={{ flexGrow: 1 }}>
             <Box display="flex" alignItems="center" mb={2}>
               <Avatar sx={{ bgcolor: theme.palette.primary.main, mr: 2 }}>
-                <QrCodeIcon />
+                <QrCode />
               </Avatar>
               <Typography variant="h5" component="h2">
                 Generate QR Code
@@ -107,14 +104,11 @@ export const Home: React.FC = () => {
         {!isAuthenticated && (
           <Card 
             sx={{ 
-              height: '100%', 
-              display: 'flex', 
-              flexDirection: 'column',
               cursor: 'pointer',
-              transition: 'all 0.3s ease',
+              transition: 'transform 0.2s, box-shadow 0.2s',
               '&:hover': {
-                transform: 'translateY(-8px)',
-                boxShadow: '0 12px 20px rgba(0, 0, 0, 0.1)'
+                transform: 'translateY(-4px)',
+                boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
               }
             }}
             onClick={() => handleCardClick('/admin/login')}
@@ -122,7 +116,7 @@ export const Home: React.FC = () => {
             <CardContent sx={{ flexGrow: 1 }}>
               <Box display="flex" alignItems="center" mb={2}>
                 <Avatar sx={{ bgcolor: theme.palette.secondary.main, mr: 2 }}>
-                  <LoginIcon />
+                  <Login />
                 </Avatar>
                 <Typography variant="h5" component="h2">
                   Admin Login
@@ -152,14 +146,11 @@ export const Home: React.FC = () => {
           <>
             <Card 
               sx={{ 
-                height: '100%', 
-                display: 'flex', 
-                flexDirection: 'column',
                 cursor: 'pointer',
-                transition: 'all 0.3s ease',
+                transition: 'transform 0.2s, box-shadow 0.2s',
                 '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: '0 12px 20px rgba(0, 0, 0, 0.1)'
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
                 }
               }}
               onClick={() => handleCardClick('/admin/dashboard')}
@@ -167,7 +158,7 @@ export const Home: React.FC = () => {
               <CardContent sx={{ flexGrow: 1 }}>
                 <Box display="flex" alignItems="center" mb={2}>
                   <Avatar sx={{ bgcolor: theme.palette.info.main, mr: 2 }}>
-                    <PeopleIcon />
+                    <People />
                   </Avatar>
                   <Typography variant="h5" component="h2">
                     Admin Dashboard
@@ -193,14 +184,11 @@ export const Home: React.FC = () => {
 
             <Card 
               sx={{ 
-                height: '100%', 
-                display: 'flex', 
-                flexDirection: 'column',
                 cursor: 'pointer',
-                transition: 'all 0.3s ease',
+                transition: 'transform 0.2s, box-shadow 0.2s',
                 '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: '0 12px 20px rgba(0, 0, 0, 0.1)'
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
                 }
               }}
               onClick={() => handleCardClick('/admin/attendance')}
@@ -208,7 +196,7 @@ export const Home: React.FC = () => {
               <CardContent sx={{ flexGrow: 1 }}>
                 <Box display="flex" alignItems="center" mb={2}>
                   <Avatar sx={{ bgcolor: theme.palette.success.main, mr: 2 }}>
-                    <PeopleIcon />
+                    <People />
                   </Avatar>
                   <Typography variant="h5" component="h2">
                     Attendance Records
@@ -234,14 +222,11 @@ export const Home: React.FC = () => {
 
             <Card 
               sx={{ 
-                height: '100%', 
-                display: 'flex', 
-                flexDirection: 'column',
                 cursor: 'pointer',
-                transition: 'all 0.3s ease',
+                transition: 'transform 0.2s, box-shadow 0.2s',
                 '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: '0 12px 20px rgba(0, 0, 0, 0.1)'
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
                 }
               }}
               onClick={() => handleCardClick('/admin/selfies')}
@@ -249,7 +234,7 @@ export const Home: React.FC = () => {
               <CardContent sx={{ flexGrow: 1 }}>
                 <Box display="flex" alignItems="center" mb={2}>
                   <Avatar sx={{ bgcolor: theme.palette.warning.main, mr: 2 }}>
-                    <PhotoIcon />
+                    <Photo />
                   </Avatar>
                   <Typography variant="h5" component="h2">
                     Student Selfies
@@ -275,14 +260,11 @@ export const Home: React.FC = () => {
 
             <Card 
               sx={{ 
-                height: '100%', 
-                display: 'flex', 
-                flexDirection: 'column',
                 cursor: 'pointer',
-                transition: 'all 0.3s ease',
+                transition: 'transform 0.2s, box-shadow 0.2s',
                 '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: '0 12px 20px rgba(0, 0, 0, 0.1)'
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
                 }
               }}
               onClick={() => handleCardClick('/admin/institutions')}
@@ -290,7 +272,7 @@ export const Home: React.FC = () => {
               <CardContent sx={{ flexGrow: 1 }}>
                 <Box display="flex" alignItems="center" mb={2}>
                   <Avatar sx={{ bgcolor: theme.palette.primary.dark, mr: 2 }}>
-                    <SchoolIcon />
+                    <School />
                   </Avatar>
                   <Typography variant="h5" component="h2">
                     Institutions
@@ -316,14 +298,11 @@ export const Home: React.FC = () => {
 
             <Card 
               sx={{ 
-                height: '100%', 
-                display: 'flex', 
-                flexDirection: 'column',
                 cursor: 'pointer',
-                transition: 'all 0.3s ease',
+                transition: 'transform 0.2s, box-shadow 0.2s',
                 '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: '0 12px 20px rgba(0, 0, 0, 0.1)'
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
                 }
               }}
               onClick={() => handleCardClick('/admin/venues')}
@@ -331,7 +310,7 @@ export const Home: React.FC = () => {
               <CardContent sx={{ flexGrow: 1 }}>
                 <Box display="flex" alignItems="center" mb={2}>
                   <Avatar sx={{ bgcolor: theme.palette.secondary.dark, mr: 2 }}>
-                    <LocationOnIcon />
+                    <LocationOn />
                   </Avatar>
                   <Typography variant="h5" component="h2">
                     Venues

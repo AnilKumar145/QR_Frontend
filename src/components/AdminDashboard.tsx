@@ -15,15 +15,17 @@ import {
   IconButton,
   Avatar
 } from '@mui/material';
-import LogoutIcon from '@mui/icons-material/Logout';
-import PeopleIcon from '@mui/icons-material/People';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import LocationOffIcon from '@mui/icons-material/LocationOff';
-import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import PieChartIcon from '@mui/icons-material/PieChart';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import { 
+  Dashboard as DashboardIcon,
+  Logout as LogoutIcon,
+  People as PeopleIcon,
+  LocationOn as LocationOnIcon,
+  LocationOff as LocationOffIcon,
+  PhotoLibrary as PhotoLibraryIcon,
+  Refresh as RefreshIcon,
+  PieChart as PieChartIcon,
+  TrendingUp as TrendingUpIcon
+} from '@mui/icons-material';
 // import AttendanceReportGenerator from './AttendanceReportGenerator';
 
 interface AttendanceRecord {

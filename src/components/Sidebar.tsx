@@ -12,16 +12,16 @@ import {
   useMediaQuery
 } from '@mui/material';
 import { 
-  QrCode as QrCodeIcon,
-  Dashboard as DashboardIcon,
-  School as SchoolIcon,
-  LocationOn as LocationOnIcon,
-  People as PeopleIcon,
-  Flag as FlagIcon,
-  BarChart as BarChartIcon,
-  Photo as PhotoIcon,
-  Login as LoginIcon,
-  Logout as LogoutIcon
+  QrCode,
+  Dashboard,
+  School,
+  LocationOn,
+  People,
+  Flag,
+  BarChart,
+  Photo,
+  Login,
+  Logout
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContextDefinition';
@@ -77,7 +77,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
       <List>
         <ListItemButton onClick={() => handleNavigation('/')}>
           <ListItemIcon>
-            <QrCodeIcon color="primary" />
+            <QrCode color="primary" />
           </ListItemIcon>
           <ListItemText primary="Generate QR" />
         </ListItemButton>
@@ -86,49 +86,49 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
           <>
             <ListItemButton onClick={() => handleNavigation('/admin/dashboard')}>
               <ListItemIcon>
-                <DashboardIcon color="primary" />
+                <Dashboard color="primary" />
               </ListItemIcon>
               <ListItemText primary="Dashboard" />
             </ListItemButton>
             
             <ListItemButton onClick={() => handleNavigation('/admin/attendance')}>
               <ListItemIcon>
-                <PeopleIcon color="primary" />
+                <People color="primary" />
               </ListItemIcon>
               <ListItemText primary="Attendance Records" />
             </ListItemButton>
             
             <ListItemButton onClick={() => handleNavigation('/admin/selfies')}>
               <ListItemIcon>
-                <PhotoIcon color="primary" />
+                <Photo color="primary" />
               </ListItemIcon>
               <ListItemText primary="Student Selfies" />
             </ListItemButton>
             
             <ListItemButton onClick={() => handleNavigation('/admin/institutions')}>
               <ListItemIcon>
-                <SchoolIcon color="primary" />
+                <School color="primary" />
               </ListItemIcon>
               <ListItemText primary="Institutions" />
             </ListItemButton>
             
             <ListItemButton onClick={() => handleNavigation('/admin/venues')}>
               <ListItemIcon>
-                <LocationOnIcon color="primary" />
+                <LocationOn color="primary" />
               </ListItemIcon>
               <ListItemText primary="Venues" />
             </ListItemButton>
             
             <ListItemButton onClick={() => handleNavigation('/admin/flagged-logs')}>
               <ListItemIcon>
-                <FlagIcon color="primary" />
+                <Flag color="primary" />
               </ListItemIcon>
               <ListItemText primary="Flagged Logs" />
             </ListItemButton>
             
             <ListItemButton onClick={() => handleNavigation('/admin/statistics')}>
               <ListItemIcon>
-                <BarChartIcon color="primary" />
+                <BarChart color="primary" />
               </ListItemIcon>
               <ListItemText primary="Statistics" />
             </ListItemButton>
@@ -137,7 +137,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             
             <ListItemButton onClick={handleLogout}>
               <ListItemIcon>
-                <LogoutIcon color="error" />
+                <Logout color="error" />
               </ListItemIcon>
               <ListItemText primary="Logout" sx={{ color: theme.palette.error.main }} />
             </ListItemButton>
@@ -145,7 +145,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
         ) : (
           <ListItemButton onClick={() => handleNavigation('/admin/login')}>
             <ListItemIcon>
-              <LoginIcon color="primary" />
+              <Login color="primary" />
             </ListItemIcon>
             <ListItemText primary="Admin Login" />
           </ListItemButton>
@@ -154,6 +154,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     </Drawer>
   );
 };
+
+
 
 
 

@@ -9,7 +9,7 @@ import {
     Alert,
     CircularProgress
 } from '@mui/material';
-import { PhotoCamera } from '@mui/icons-material';
+import { CameraAlt } from '@mui/icons-material';
 import Webcam from 'react-webcam';
 import { useGeolocation } from '../hooks/useGeoLocation';
 import { api } from '../api';
@@ -391,7 +391,7 @@ export const AttendanceMarking: React.FC = () => {
                         {!selfie && !showCamera && (
                             <Button
                                 variant="outlined"
-                                startIcon={<PhotoCamera />}
+                                startIcon={<CameraAlt />}
                                 onClick={() => setShowCamera(true)}
                                 fullWidth
                                 sx={{ 
@@ -514,6 +514,8 @@ export const AttendanceMarking: React.FC = () => {
         </Card>
     );
 };
+
+
 
 
 
