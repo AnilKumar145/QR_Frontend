@@ -1,32 +1,34 @@
 import React, { useContext, useEffect, useState } from 'react';
 import axios from 'axios';
-import { AuthContext } from '../contexts/AuthContextDefinition';
+import { AuthContext } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   Box, 
   Typography, 
   Alert, 
-  Container, 
   CircularProgress, 
   Card, 
   CardContent, 
-  AppBar, 
-  Toolbar, 
+  Avatar,
+  Button,
+  useTheme,
+  AppBar,
+  Toolbar,
+  Container,
   IconButton,
-  Avatar
+  Tooltip
 } from '@mui/material';
 import { 
-  Dashboard as DashboardIcon,
-  Logout as LogoutIcon,
   People as PeopleIcon,
   LocationOn as LocationOnIcon,
   LocationOff as LocationOffIcon,
   PhotoLibrary as PhotoLibraryIcon,
   Refresh as RefreshIcon,
   PieChart as PieChartIcon,
-  TrendingUp as TrendingUpIcon
+  TrendingUp as TrendingUpIcon,
+  Dashboard as DashboardIcon,
+  Logout as LogoutIcon
 } from '@mui/icons-material';
-// import AttendanceReportGenerator from './AttendanceReportGenerator';
 
 interface AttendanceRecord {
   id: number;
@@ -68,6 +70,7 @@ const AdminDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
+  const theme = useTheme();
   
   // Add state for statistics with proper types
   const [dailyStats, setDailyStats] = useState<DailyStats | null>(null);
@@ -104,6 +107,12 @@ const AdminDashboard: React.FC = () => {
 
   const handleViewStatistics = () => {
     navigate('/admin/statistics');
+  };
+
+  // Add logout handler
+  const handleLogout = () => {
+    logout();
+    navigate('/admin/login');
   };
 
   useEffect(() => {
@@ -174,61 +183,105 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/admin/login');
-  };
-
   // Calculate statistics
   const totalAttendance = attendance.length;
 
   if (loading) {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-        <AppBar position="static">
-          <Toolbar>
-            <DashboardIcon sx={{ mr: 2 }} />
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              QR Attendance System
-            </Typography>
+        <AppBar position="static" elevation={0} sx={{ borderBottom: '1px solid', borderColor: 'rgba(0, 0, 0, 0.06)' }}>
+          <Toolbar sx={{ height: 64, px: { xs: 2, sm: 3 } }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Avatar sx={{ bgcolor: 'primary.main', mr: 2, width: 32, height: 32 }}>
+                <DashboardIcon sx={{ fontSize: 18 }} />
+              </Avatar>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: { xs: '1rem', sm: '1.1rem' } }}>
+                QR Attendance System
+              </Typography>
+            </Box>
           </Toolbar>
         </AppBar>
         
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4, flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-          <CircularProgress size={60} thickness={4} />
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Loading dashboard data...
-          </Typography>
-        </Container>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          height: '100%',
+          justifyContent: 'center',
+          alignItems: 'center',
+          py: 8
+        }}>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            p: 4,
+            borderRadius: 2,
+            bgcolor: 'background.paper',
+            boxShadow: 1,
+            maxWidth: 400,
+            width: '100%'
+          }}>
+            <CircularProgress 
+              size={48} 
+              thickness={4} 
+              sx={{ mb: 3, color: theme.palette.primary.main }} 
+            />
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                mb: 1,
+                fontWeight: 600,
+                textAlign: 'center'
+              }}
+            >
+              Loading Dashboard
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{ textAlign: 'center' }}
+            >
+              Please wait while we fetch your data...
+            </Typography>
+          </Box>
+        </Box>
       </Box>
     );
   }
 
   return (
     <Box sx={{ flexGrow: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <AppBar position="static">
-        <Toolbar>
-          <DashboardIcon sx={{ mr: 2 }} />
-          <Typography 
-            variant="h6" 
-            component="div" 
-            sx={{ 
-              flexGrow: 1,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.25rem' }
-            }}
-          >
-            <Box sx={{ display: { xs: 'block', sm: 'none' } }}>QR Attendance</Box>
-            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>QR Attendance System - Admin Dashboard</Box>
-          </Typography>
-          <IconButton color="inherit" onClick={handleRefresh} edge="end" disabled={refreshing}>
-            {refreshing ? <CircularProgress size={24} /> : <RefreshIcon />}
-          </IconButton>
-          <IconButton color="inherit" onClick={handleLogout} edge="end">
-            <LogoutIcon />
-          </IconButton>
+      <AppBar position="static" elevation={0} sx={{ borderBottom: '1px solid', borderColor: 'rgba(0, 0, 0, 0.06)' }}>
+        <Toolbar sx={{ height: 64, px: { xs: 2, sm: 3 } }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Avatar sx={{ bgcolor: 'primary.main', mr: 2, width: 32, height: 32 }}>
+              <DashboardIcon sx={{ fontSize: 18 }} />
+            </Avatar>
+            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: { xs: '1rem', sm: '1.1rem' } }}>
+              QR Attendance System
+            </Typography>
+          </Box>
+          <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center' }}>
+            <Button
+              startIcon={<RefreshIcon />}
+              onClick={handleRefresh}
+              disabled={refreshing}
+              size="small"
+              sx={{ mr: 1 }}
+            >
+              {refreshing ? 'Refreshing...' : 'Refresh'}
+            </Button>
+            <Tooltip title="Logout">
+              <IconButton 
+                color="primary" 
+                onClick={handleLogout}
+                size="small"
+              >
+                <LogoutIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
         </Toolbar>
       </AppBar>
 

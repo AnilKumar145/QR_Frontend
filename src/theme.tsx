@@ -40,27 +40,34 @@ const theme = createTheme({
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
       fontWeight: 700,
+      fontSize: '2.5rem',
     },
     h2: {
       fontWeight: 700,
+      fontSize: '2rem',
     },
     h3: {
       fontWeight: 600,
+      fontSize: '1.75rem',
     },
     h4: {
       fontWeight: 600,
+      fontSize: '1.5rem',
     },
     h5: {
       fontWeight: 600,
+      fontSize: '1.25rem',
     },
     h6: {
       fontWeight: 600,
+      fontSize: '1rem',
     },
     button: {
       fontWeight: 600,
       textTransform: 'none',
     },
   },
+  spacing: 8, // Base spacing unit of 8px
   shape: {
     borderRadius: 10,
   },
@@ -96,12 +103,12 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 8,
-          padding: '10px 20px',
-          boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.05)',
+          padding: '8px 16px',
+          boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.05)',
           transition: 'transform 0.2s, box-shadow 0.2s',
           '&:hover': {
             transform: 'translateY(-2px)',
-            boxShadow: '0px 6px 12px rgba(0, 0, 0, 0.1)',
+            boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
           },
         },
         containedPrimary: {
@@ -110,13 +117,26 @@ const theme = createTheme({
         containedSecondary: {
           background: 'linear-gradient(45deg, #7209b7 30%, #6a0dad 90%)',
         },
+        // Make buttons more compact
+        sizeLarge: {
+          padding: '10px 20px',
+          fontSize: '1rem',
+        },
+        sizeMedium: {
+          padding: '8px 16px',
+          fontSize: '0.875rem',
+        },
+        sizeSmall: {
+          padding: '6px 12px',
+          fontSize: '0.8125rem',
+        },
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
-          boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.05)',
+          borderRadius: 12,
+          boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.05)',
           overflow: 'hidden',
         },
       },
@@ -124,8 +144,10 @@ const theme = createTheme({
     MuiAppBar: {
       styleOverrides: {
         root: {
-          boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.05)',
-          backgroundImage: 'linear-gradient(90deg, #4361ee 0%, #3a56d4 100%)',
+          boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.05)',
+          backgroundImage: 'none',
+          backgroundColor: '#ffffff',
+          color: '#2b2d42',
         },
       },
     },
@@ -133,7 +155,61 @@ const theme = createTheme({
       styleOverrides: {
         paper: {
           borderRight: 'none',
-          boxShadow: '4px 0px 10px rgba(0, 0, 0, 0.05)',
+          boxShadow: '1px 0px 4px rgba(0, 0, 0, 0.05)',
+        },
+      },
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        root: {
+          padding: '12px 16px',
+          borderBottom: '1px solid rgba(0, 0, 0, 0.06)',
+        },
+        head: {
+          fontWeight: 600,
+          backgroundColor: 'rgba(0, 0, 0, 0.02)',
+        },
+      },
+    },
+    MuiTableContainer: {
+      styleOverrides: {
+        root: {
+          borderRadius: 12,
+          boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.05)',
+          overflow: 'hidden',
+        },
+      },
+    },
+    MuiToolbar: {
+      styleOverrides: {
+        root: {
+          height: 64,
+          padding: '0 16px',
+        },
+      },
+    },
+    MuiContainer: {
+      styleOverrides: {
+        root: {
+          paddingLeft: 24,
+          paddingRight: 24,
+        },
+      },
+    },
+    MuiCardContent: {
+      styleOverrides: {
+        root: {
+          padding: 24,
+          '&:last-child': {
+            paddingBottom: 24,
+          },
+        },
+      },
+    },
+    MuiCardHeader: {
+      styleOverrides: {
+        root: {
+          padding: '16px 24px',
         },
       },
     },

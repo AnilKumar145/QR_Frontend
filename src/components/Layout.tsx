@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   AppBar, 
@@ -8,7 +7,8 @@ import {
   Box, 
   useTheme,
   useMediaQuery,
-  Avatar
+  Avatar,
+  Container
 } from '@mui/material';
 import { Menu as MenuIcon, QrCode2 as QrIcon } from '@mui/icons-material';
 import { Sidebar } from './Sidebar';
@@ -44,16 +44,18 @@ export const Layout: React.FC = () => {
     <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       <AppBar 
         position="fixed" 
-        elevation={1}
+        elevation={0}
         sx={{ 
           zIndex: theme.zIndex.drawer + 1,
           transition: theme.transitions.create(['width', 'margin'], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
           }),
+          borderBottom: '1px solid',
+          borderColor: 'rgba(0, 0, 0, 0.06)',
         }}
       >
-        <Toolbar>
+        <Toolbar sx={{ height: 64, px: { xs: 2, sm: 3 } }}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -64,10 +66,26 @@ export const Layout: React.FC = () => {
             <MenuIcon />
           </IconButton>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Avatar sx={{ bgcolor: 'white', mr: 1, display: { xs: 'none', sm: 'flex' } }}>
-              <QrIcon sx={{ color: theme.palette.primary.main }} />
+            <Avatar 
+              sx={{ 
+                bgcolor: theme.palette.primary.main, 
+                mr: 1.5, 
+                display: { xs: 'none', sm: 'flex' },
+                width: 32,
+                height: 32
+              }}
+            >
+              <QrIcon sx={{ color: 'white', fontSize: 18 }} />
             </Avatar>
-            <Typography variant="h6" noWrap component="div">
+            <Typography 
+              variant="h6" 
+              noWrap 
+              component="div"
+              sx={{ 
+                fontWeight: 600,
+                fontSize: { xs: '1rem', sm: '1.1rem' }
+              }}
+            >
               {getPageTitle()}
             </Typography>
           </Box>
@@ -80,7 +98,6 @@ export const Layout: React.FC = () => {
         component="main"
         sx={{
           flexGrow: 1,
-          p: { xs: 2, sm: 3 },
           width: { sm: `calc(100% - ${sidebarOpen ? 240 : 0}px)` },
           mt: '64px', // AppBar height
           ml: { sm: sidebarOpen ? '240px' : 0 },
@@ -93,19 +110,20 @@ export const Layout: React.FC = () => {
           bgcolor: '#f8fafc', // Light background for content area
         }}
       >
-        <Box 
+        <Container 
+          maxWidth="xl" 
           sx={{ 
-            maxWidth: '1400px', 
-            mx: 'auto',
-            width: '100%',
-            pb: 4
+            py: { xs: 3, sm: 4 },
+            px: { xs: 2, sm: 3, md: 4 },
+            height: '100%'
           }}
         >
           <Outlet />
-        </Box>
+        </Container>
       </Box>
     </Box>
   );
 };
+
 
 
