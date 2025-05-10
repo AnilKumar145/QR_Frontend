@@ -10,7 +10,6 @@ import {
   Typography,
   useTheme,
   useMediaQuery,
-  Avatar,
   alpha
 } from '@mui/material';
 import { 
@@ -22,7 +21,6 @@ import {
   Flag,
   BarChart,
   Photo,
-  // Login, // Removed unused import
   Logout
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -74,31 +72,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     >
       <Box 
         sx={{ 
-          p: 3, 
+          p: 2.5, 
           display: 'flex', 
           flexDirection: 'column',
-          alignItems: 'center', 
+          alignItems: 'flex-start', 
           justifyContent: 'center',
-          background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.primary.dark} 90%)`,
+          background: theme.palette.primary.main,
           color: 'white'
         }}
       >
-        <Avatar 
-          sx={{ 
-            width: 60, 
-            height: 60, 
-            bgcolor: 'white', 
-            mb: 1,
-            boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-          }}
-        >
-          <QrCode sx={{ color: theme.palette.primary.main, fontSize: 30 }} />
-        </Avatar>
         <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
           QR Attendance
-        </Typography>
-        <Typography variant="body2" sx={{ opacity: 0.8, mt: 0.5 }}>
-          Smart Attendance System
         </Typography>
       </Box>
       <Divider />
@@ -357,6 +341,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     </Drawer>
   );
 };
+
 
 
 
