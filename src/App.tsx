@@ -12,10 +12,11 @@ import NotFound from './components/NotFound';
 import { AuthProvider } from './contexts/AuthContext';
 import { AuthContext } from './contexts/AuthContext';
 import { useContext } from 'react';
-import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
+import { ThemeProvider, CssBaseline } from '@mui/material';
 import InstitutionsPage from './components/InstitutionsPage';
 import VenuesPage from './components/VenuesPage';
 import { Layout } from './components/Layout';
+import theme from './theme';
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
@@ -27,30 +28,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
   
   return children;
 };
-
-// Create a custom theme with light mode colors
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#646cff',
-    },
-    secondary: {
-      main: '#535bf2',
-    },
-    background: {
-      default: '#ffffff',
-      paper: '#f5f5f5',
-    },
-    text: {
-      primary: '#213547',
-      secondary: 'rgba(33, 53, 71, 0.7)',
-    },
-  },
-  typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-  },
-});
 
 function App() {
   return (
@@ -136,6 +113,8 @@ function App() {
 }
 
 export default App;
+
+
 
 
 
