@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { 
   AppBar, 
@@ -26,7 +27,9 @@ export const Layout: React.FC = () => {
   // Get page title based on current route
   const getPageTitle = () => {
     const path = location.pathname;
-    if (path === '/') return 'Generate QR Code';
+    if (path === '/') return 'QR Attendance System';
+    if (path === '/qr-generator') return 'Generate QR Code';
+    if (path === '/admin/login') return 'Admin Login';
     if (path === '/admin/dashboard') return 'Admin Dashboard';
     if (path === '/admin/attendance') return 'Attendance Records';
     if (path === '/admin/selfies') return 'Student Selfies';
@@ -34,7 +37,6 @@ export const Layout: React.FC = () => {
     if (path === '/admin/venues') return 'Venues';
     if (path === '/admin/flagged-logs') return 'Flagged Logs';
     if (path === '/admin/statistics') return 'Statistics';
-    if (path === '/admin/login') return 'Admin Login';
     return 'QR Attendance System';
   };
 
@@ -105,4 +107,5 @@ export const Layout: React.FC = () => {
     </Box>
   );
 };
+
 

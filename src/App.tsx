@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AttendanceMarking } from './components/AttendanceMarking';
@@ -16,6 +17,7 @@ import { ThemeProvider, CssBaseline } from '@mui/material';
 import InstitutionsPage from './components/InstitutionsPage';
 import VenuesPage from './components/VenuesPage';
 import { Layout } from './components/Layout';
+import { Home } from './pages/Home';
 import theme from './theme';
 
 // Protected route component
@@ -36,8 +38,10 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
+            {/* Routes inside the layout */}
             <Route path="/" element={<Layout />}>
-              <Route index element={<QRCodeDisplay />} />
+              <Route index element={<Home />} />
+              <Route path="/qr-generator" element={<QRCodeDisplay />} />
               <Route path="/admin/login" element={<AdminLogin />} />
               
               {/* Protected Routes */}
@@ -97,14 +101,12 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
+              <Route path="*" element={<NotFound />} />
             </Route>
             
             {/* Routes outside the layout */}
             <Route path="/attendance/:sessionId" element={<AttendanceMarking />} />
             <Route path="/mark-attendance/:sessionId" element={<AttendanceMarking />} />
-            
-            {/* 404 Route */}
-            <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>
       </AuthProvider>
@@ -113,22 +115,5 @@ function App() {
 }
 
 export default App;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
