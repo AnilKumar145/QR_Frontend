@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   AppBar, 
   Toolbar, 
@@ -16,13 +16,8 @@ import { Outlet } from 'react-router-dom';
 
 export const Layout: React.FC = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
-
-  // Update sidebar state when screen size changes
-  useEffect(() => {
-    setSidebarOpen(!isMobile);
-  }, [isMobile]);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -62,30 +57,19 @@ export const Layout: React.FC = () => {
         component="main"
         sx={{
           flexGrow: 1,
-          p: { xs: 2, sm: 3 },
-          width: '100%',
+          p: 3,
+          width: '100%', // Use full width
           mt: '64px', // AppBar height
-          ml: { sm: sidebarOpen ? '240px' : 0 },
           transition: theme.transitions.create(['margin', 'width'], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
           }),
         }}
       >
-        <Container 
-          maxWidth="lg" 
-          sx={{ 
-            py: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center', // Center content horizontally
-            width: '100%'
-          }}
-        >
+        <Container maxWidth="lg" sx={{ py: 4, mx: 'auto' }}>
           <Outlet />
         </Container>
       </Box>
     </Box>
   );
 };
-
