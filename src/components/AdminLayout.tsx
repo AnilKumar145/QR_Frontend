@@ -52,10 +52,9 @@ const AdminLayout: React.FC = () => {
       >
         <Box 
           sx={{ 
-            maxWidth: '1400px', 
+            maxWidth: '1200px', // Reduced from 1400px
             width: '100%',
             pb: 4,
-            px: { xs: 2, sm: 3 }, // Add horizontal padding
           }}
         >
           <Outlet />
@@ -66,4 +65,5 @@ const AdminLayout: React.FC = () => {
 };
 
 export default AdminLayout;
+
 
