@@ -5,21 +5,13 @@ import {
   Container, 
   Paper, 
   CircularProgress, 
-  Alert, 
-  AppBar, 
-  Toolbar, 
-  IconButton
+  Alert
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import LogoutIcon from '@mui/icons-material/Logout';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import axios from 'axios';
 
-// Install recharts if not already installed:
-// npm install recharts @types/recharts
+// Import recharts components
 import { 
   BarChart, 
   Bar, 
@@ -66,7 +58,7 @@ interface PieChartLabelProps {
 }
 
 const StatisticsPage: React.FC = () => {
-  const { token, logout } = useContext(AuthContext);
+  const { token } = useContext(AuthContext);
   const navigate = useNavigate();
   const [dailyStats, setDailyStats] = useState<DailyStatsItem[]>([]);
   const [summaryStats, setSummaryStats] = useState<SummaryStatsData | null>(null);
@@ -171,20 +163,6 @@ const StatisticsPage: React.FC = () => {
     fetchStatistics();
   }, [token, navigate, fetchStatistics]);
 
-  const handleRefresh = () => {
-    setRefreshing(true);
-    fetchStatistics();
-  };
-
-  const handleBackToDashboard = () => {
-    navigate('/admin/dashboard');
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/admin/login');
-  };
-
   // Custom label formatter for pie chart
   const renderCustomizedLabel = ({ name, percent }: PieChartLabelProps) => {
     // Handle NaN or undefined percent
@@ -192,37 +170,8 @@ const StatisticsPage: React.FC = () => {
     return `${name}: ${(safePercent * 100).toFixed(0)}%`;
   };
 
-
-
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="back"
-            sx={{ mr: 2 }}
-            onClick={handleBackToDashboard}
-          >
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Attendance Statistics
-          </Typography>
-          <IconButton color="inherit" onClick={handleRefresh} disabled={refreshing}>
-            {refreshing ? <CircularProgress size={24} color="inherit" /> : <RefreshIcon />}
-          </IconButton>
-          <IconButton color="inherit" onClick={handleBackToDashboard}>
-            <DashboardIcon />
-          </IconButton>
-          <IconButton color="inherit" onClick={handleLogout}>
-            <LogoutIcon />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
-
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -417,11 +366,5 @@ const StatisticsPage: React.FC = () => {
 };
 
 export default StatisticsPage;
-
-
-
-
-
-
 
 

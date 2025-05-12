@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState } from 'react';
 import { 
   Box, 
   Drawer, 
@@ -7,7 +7,6 @@ import {
   Typography, 
   Divider, 
   List, 
-  ListItem,
   ListItemButton, 
   ListItemIcon, 
   ListItemText, 
@@ -16,8 +15,7 @@ import {
   useMediaQuery, 
   Avatar,
   Container,
-  alpha,
-  Collapse
+  alpha
 } from '@mui/material';
 import { 
   Menu as MenuIcon, 
@@ -27,21 +25,9 @@ import {
   Warning as WarningIcon,
   BarChart as BarChartIcon,
   QrCode as QrCodeIcon,
-  ChevronLeft as ChevronLeftIcon,
-  LocationOn as LocationOnIcon,
-  ExpandLess,
-  ExpandMore
+  ChevronLeft as ChevronLeftIcon
 } from '@mui/icons-material';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { AuthContext } from '../contexts/AuthContext';
-
-// Define venue type to avoid using 'any'
-interface VenueStats {
-  venue_id: number;
-  venue_name: string;
-  total_attendance: number;
-}
 
 const drawerWidth = 240;
 
@@ -51,7 +37,6 @@ export const Layout: React.FC = () => {
   const [open, setOpen] = useState(!isMobile);
   const location = useLocation();
   const navigate = useNavigate();
-  const { token } = useContext(AuthContext);
 
   const handleDrawerToggle = () => {
     setOpen(!open);
@@ -78,31 +63,6 @@ export const Layout: React.FC = () => {
     { text: 'Statistics', icon: <BarChartIcon />, path: '/admin/statistics' },
     { text: 'Generate QR', icon: <QrCodeIcon />, path: '/' }
   ];
-
-  const [venues, setVenues] = useState<{id: number, name: string, count: number}[]>([]);
-  const [venuesOpen, setVenuesOpen] = useState(false);
-
-  useEffect(() => {
-    const fetchVenues = async () => {
-      if (!token) return;
-      
-      try {
-        const response = await axios.get<VenueStats[]>('https://qr-backend-1-pq5i.onrender.com/api/v1/admin/statistics/venue', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        
-        setVenues(response.data.map((v: VenueStats) => ({
-          id: v.venue_id,
-          name: v.venue_name,
-          count: v.total_attendance
-        })));
-      } catch (err) {
-        console.error("Error fetching venue stats:", err);
-      }
-    };
-    
-    fetchVenues();
-  }, [token]);
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
@@ -161,106 +121,61 @@ export const Layout: React.FC = () => {
       <Drawer
         variant={isMobile ? "temporary" : "persistent"}
         open={open}
-        onClose={handleDrawerToggle}
+        onClose={() => setOpen(false)}
         sx={{
           width: drawerWidth,
           flexShrink: 0,
           '& .MuiDrawer-paper': {
             width: drawerWidth,
             boxSizing: 'border-box',
-            borderRight: '1px solid rgba(0, 0, 0, 0.06)',
-            boxShadow: 'none'
           },
         }}
       >
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          py: 2,
-          px: 2,
-          height: 64
-        }}>
-          <Avatar 
-            sx={{ 
-              bgcolor: theme.palette.primary.main, 
-              mr: 1.5, 
-              width: 32,
-              height: 32
-            }}
-          >
-            <QrCodeIcon sx={{ fontSize: 18 }} />
-          </Avatar>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            QR Attendance
-          </Typography>
-        </Box>
-        <Divider />
-        <List sx={{ pt: 2 }}>
-          {menuItems.map((item) => (
-            <ListItemButton
-              key={item.text}
-              onClick={() => navigate(item.path)}
-              selected={location.pathname === item.path}
-              sx={{
-                mx: 1,
-                my: 0.5,
-                borderRadius: 1.5,
-                '&.Mui-selected': {
-                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.15),
-                  },
-                },
-                '&:hover': {
-                  backgroundColor: alpha(theme.palette.primary.main, 0.05),
-                },
+        <Toolbar />
+        <Box sx={{ overflow: 'auto', p: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <Avatar 
+              sx={{ 
+                bgcolor: theme.palette.primary.main, 
+                mr: 1.5, 
+                width: 32,
+                height: 32
               }}
             >
-              <ListItemIcon sx={{ 
-                color: location.pathname === item.path ? 'primary.main' : 'text.secondary',
-                minWidth: 40
-              }}>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText 
-                primary={item.text} 
-                primaryTypographyProps={{ 
-                  fontWeight: location.pathname === item.path ? 600 : 400,
-                  fontSize: '0.9rem'
+              <QrCodeIcon sx={{ fontSize: 18 }} />
+            </Avatar>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              QR Attendance
+            </Typography>
+          </Box>
+          <Divider />
+          <List sx={{ pt: 2 }}>
+            {menuItems.map((item) => (
+              <ListItemButton
+                key={item.text}
+                onClick={() => navigate(item.path)}
+                selected={location.pathname === item.path}
+                sx={{
+                  mx: 1,
+                  my: 0.5,
+                  borderRadius: 1.5,
+                  '&.Mui-selected': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.15),
+                    },
+                  },
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                  },
                 }}
-              />
-            </ListItemButton>
-          ))}
-        </List>
-        <Divider sx={{ my: 1 }} />
-        <ListItemButton onClick={() => setVenuesOpen(!venuesOpen)}>
-          <ListItemIcon>
-            <LocationOnIcon />
-          </ListItemIcon>
-          <ListItemText primary="Venues" />
-          {venuesOpen ? <ExpandLess /> : <ExpandMore />}
-        </ListItemButton>
-        <Collapse in={venuesOpen} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            {venues.map(venue => (
-              <ListItemButton key={venue.id} sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  <LocationOnIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={venue.name} 
-                  secondary={`${venue.count} students`} 
-                />
+              >
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
               </ListItemButton>
             ))}
-            {venues.length === 0 && (
-              <ListItem sx={{ pl: 4 }}>
-                <ListItemText secondary="No venue data" />
-              </ListItem>
-            )}
           </List>
-        </Collapse>
+        </Box>
       </Drawer>
 
       <Box
@@ -293,6 +208,10 @@ export const Layout: React.FC = () => {
     </Box>
   );
 };
+
+
+
+
 
 
 

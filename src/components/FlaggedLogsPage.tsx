@@ -1,11 +1,21 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, 
-  TableHead, TableRow, Button, TextField, InputAdornment, CircularProgress,
-  IconButton, AppBar, Toolbar
+  Box, 
+  Paper, 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow, 
+  Button, 
+  TextField, 
+  InputAdornment, 
+  CircularProgress,
+  Container
 } from '@mui/material';
-import { Search as SearchIcon, ArrowBack as ArrowBackIcon, Refresh as RefreshIcon } from '@mui/icons-material';
+import { Search as SearchIcon, Refresh as RefreshIcon } from '@mui/icons-material';
 import { AuthContext } from '../contexts/AuthContext';
 import axios from 'axios';
 
@@ -18,7 +28,7 @@ interface FlaggedLog {
 }
 
 const FlaggedLogsPage: React.FC = () => {
-  const { token, logout } = useContext(AuthContext);
+  const { token } = useContext(AuthContext);
   const navigate = useNavigate();
   const [flaggedLogs, setFlaggedLogs] = useState<FlaggedLog[]>([]);
   const [filteredLogs, setFilteredLogs] = useState<FlaggedLog[]>([]);
@@ -42,8 +52,9 @@ const FlaggedLogsPage: React.FC = () => {
         setFlaggedLogs(response.data);
         setFilteredLogs(response.data);
         setError('');
-      } catch (err: any) {
-        setError(err.response?.data?.detail || 'Failed to fetch flagged logs');
+      } catch (err) {
+        const error = err as { response?: { data?: { detail?: string } } };
+        setError(error.response?.data?.detail || 'Failed to fetch flagged logs');
       } finally {
         setLoading(false);
       }
@@ -80,44 +91,17 @@ const FlaggedLogsPage: React.FC = () => {
       setFlaggedLogs(response.data);
       setFilteredLogs(response.data);
       setError('');
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to refresh flagged logs');
+    } catch (err) {
+      const error = err as { response?: { data?: { detail?: string } } };
+      setError(error.response?.data?.detail || 'Failed to refresh flagged logs');
     } finally {
       setRefreshing(false);
     }
   };
 
-  const handleBackToDashboard = () => {
-    navigate('/admin/dashboard');
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/admin/login');
-  };
-
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" color="primary" elevation={0}>
-        <Toolbar>
-          <IconButton
-            edge="start"
-            color="inherit"
-            onClick={handleBackToDashboard}
-            sx={{ mr: 2 }}
-          >
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Flagged Logs
-          </Typography>
-          <Button color="inherit" onClick={handleLogout}>
-            Logout
-          </Button>
-        </Toolbar>
-      </AppBar>
-
-      <Box sx={{ p: 3 }}>
+      <Container maxWidth="lg" sx={{ mt: 3, mb: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <TextField
             placeholder="Search by session ID or reason"
@@ -184,9 +168,10 @@ const FlaggedLogsPage: React.FC = () => {
             </Table>
           </TableContainer>
         )}
-      </Box>
+      </Container>
     </Box>
   );
 };
 
 export default FlaggedLogsPage;
+

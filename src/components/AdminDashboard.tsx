@@ -10,25 +10,20 @@ import {
   Card, 
   CardContent, 
   Avatar,
-  Button,
   useTheme,
+  Container,
+  Paper,
   AppBar,
   Toolbar,
-  Container,
-  IconButton,
-  Tooltip,
-  Paper,
 } from '@mui/material';
 import { 
   People as PeopleIcon,
   LocationOn as LocationOnIcon,
   LocationOff as LocationOffIcon,
   PhotoLibrary as PhotoLibraryIcon,
-  Refresh as RefreshIcon,
   PieChart as PieChartIcon,
   TrendingUp as TrendingUpIcon,
   Dashboard as DashboardIcon,
-  Logout as LogoutIcon
 } from '@mui/icons-material';
 import VenueAttendanceStats from './VenueAttendanceStats';
 
@@ -65,21 +60,19 @@ interface SummaryStats {
 }
 
 const AdminDashboard: React.FC = () => {
-  const { user, logout } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [flaggedLogs, setFlaggedLogs] = useState<FlaggedLog[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
   const theme = useTheme();
   
-  // Add state for statistics with proper types
   const [dailyStats, setDailyStats] = useState<DailyStats | null>(null);
   const [summaryStats, setSummaryStats] = useState<SummaryStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
 
-  // Add function to fetch statistics
+  // Keep this function but we'll use it differently
   const fetchStatistics = React.useCallback(async () => {
     const token = localStorage.getItem('authToken');
     if (!token) return;
@@ -109,12 +102,6 @@ const AdminDashboard: React.FC = () => {
 
   const handleViewStatistics = () => {
     navigate('/admin/statistics');
-  };
-
-  // Add logout handler
-  const handleLogout = () => {
-    logout();
-    navigate('/admin/login');
   };
 
   useEffect(() => {
@@ -156,34 +143,6 @@ const AdminDashboard: React.FC = () => {
 
     fetchData();
   }, [user, navigate, fetchStatistics]);
-
-  const handleRefresh = async () => {
-    const token = localStorage.getItem('authToken');
-    if (!token) return;
-    
-    try {
-      setRefreshing(true);
-      const attendanceRes = await axios.get('https://qr-backend-1-pq5i.onrender.com/api/v1/admin/attendance/all', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setAttendance(attendanceRes.data);
-
-      const flaggedRes = await axios.get('https://qr-backend-1-pq5i.onrender.com/api/v1/admin/flagged-logs', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setFlaggedLogs(flaggedRes.data.flagged_logs || flaggedRes.data);
-      
-      // Refresh statistics
-      await fetchStatistics();
-      
-      setError('');
-    } catch (err) {
-      const error = err as { response?: { data?: { detail?: string } } };
-      setError(error.response?.data?.detail || 'Failed to refresh data');
-    } finally {
-      setRefreshing(false);
-    }
-  };
 
   // Calculate statistics
   const totalAttendance = attendance.length;
@@ -254,39 +213,6 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <Box sx={{ flexGrow: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <AppBar position="static" elevation={0} sx={{ borderBottom: '1px solid', borderColor: 'rgba(0, 0, 0, 0.06)' }}>
-        <Toolbar sx={{ height: 64, px: { xs: 2, sm: 3 } }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Avatar sx={{ bgcolor: 'primary.main', mr: 2, width: 32, height: 32 }}>
-              <DashboardIcon sx={{ fontSize: 18 }} />
-            </Avatar>
-            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: { xs: '1rem', sm: '1.1rem' } }}>
-              QR Attendance System
-            </Typography>
-          </Box>
-          <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center' }}>
-            <Button
-              startIcon={<RefreshIcon />}
-              onClick={handleRefresh}
-              disabled={refreshing}
-              size="small"
-              sx={{ mr: 1 }}
-            >
-              {refreshing ? 'Refreshing...' : 'Refresh'}
-            </Button>
-            <Tooltip title="Logout">
-              <IconButton 
-                color="primary" 
-                onClick={handleLogout}
-                size="small"
-              >
-                <LogoutIcon />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        </Toolbar>
-      </AppBar>
-
       <Container maxWidth="lg" sx={{ 
         mt: { xs: 2, sm: 3, md: 4 }, 
         mb: { xs: 2, sm: 3, md: 4 },
@@ -497,7 +423,7 @@ const AdminDashboard: React.FC = () => {
                   <Avatar sx={{ bgcolor: 'secondary.main', mr: 2 }}>
                     <PieChartIcon />
                   </Avatar>
-                  <Typography variant="h6">Summary Stats</Typography>
+                <Typography variant="h6">Summary Stats</Typography>
                 </Box>
                 <Typography variant="h3" component="div" align="center" sx={{ my: 2 }}>
                   {statsLoading ? (

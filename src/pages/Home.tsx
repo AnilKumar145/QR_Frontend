@@ -8,7 +8,8 @@ import {
   Button, 
   CardActions,
   useTheme,
-  Avatar
+  Avatar,
+  Paper
 } from '@mui/material';
 import { 
   QrCode,
@@ -20,6 +21,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
+import VenueAttendanceStats from '../components/VenueAttendanceStats';
 
 export const Home: React.FC = () => {
   const theme = useTheme();
@@ -359,6 +361,15 @@ export const Home: React.FC = () => {
           </>
         )}
       </Box>
+      
+      {/* Add venue attendance stats for authenticated users */}
+      {isAuthenticated && (
+        <Box sx={{ mt: 5 }}>
+          <Paper sx={{ p: 2, borderRadius: 2 }}>
+            <VenueAttendanceStats />
+          </Paper>
+        </Box>
+      )}
     </Container>
   );
 };
