@@ -150,7 +150,12 @@ const InstitutionsPage: React.FC = () => {
 
   return (
     <AdminLayout>
-      <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
+      <Box sx={{ 
+        p: 3, 
+        maxWidth: '1200px', 
+        mx: 'auto',  // This centers the container
+        width: '100%' // Ensure it takes full width up to maxWidth
+      }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h4">Institutions</Typography>
           <Button 
@@ -173,13 +178,16 @@ const InstitutionsPage: React.FC = () => {
             <CircularProgress />
           </Box>
         ) : (
-          <TableContainer component={Paper}>
+          <TableContainer component={Paper} sx={{ 
+            mb: 3,
+            overflowX: 'auto' // Ensures table is scrollable on small screens
+          }}>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>City</TableCell>
-                  <TableCell align="center">Actions</TableCell>
+                  <TableCell sx={{ width: '40%' }}>Name</TableCell>
+                  <TableCell sx={{ width: '40%' }}>City</TableCell>
+                  <TableCell align="center" sx={{ width: '20%' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -192,7 +200,7 @@ const InstitutionsPage: React.FC = () => {
                 ) : (
                   institutions.map((institution) => (
                     <TableRow key={institution.id}>
-                      <TableCell><strong>{institution.name}</strong></TableCell>
+                      <TableCell sx={{ pl: 2 }}><strong>{institution.name}</strong></TableCell>
                       <TableCell>{institution.city || 'N/A'}</TableCell>
                       <TableCell align="center">
                         <IconButton 
@@ -303,6 +311,7 @@ const InstitutionsPage: React.FC = () => {
 };
 
 export default InstitutionsPage;
+
 
 
 

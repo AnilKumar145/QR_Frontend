@@ -170,7 +170,12 @@ const VenuesPage: React.FC = () => {
 
   return (
     <AdminLayout>
-      <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
+      <Box sx={{ 
+        p: 3, 
+        maxWidth: '1200px', 
+        mx: 'auto',  // This centers the container
+        width: '100%' // Ensure it takes full width up to maxWidth
+      }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h4">Venues</Typography>
           <Button 
@@ -200,15 +205,18 @@ const VenuesPage: React.FC = () => {
             <CircularProgress />
           </Box>
         ) : (
-          <TableContainer component={Paper}>
+          <TableContainer component={Paper} sx={{ 
+            mb: 3,
+            overflowX: 'auto' // Ensures table is scrollable on small screens
+          }}>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Institution</TableCell>
-                  <TableCell>Coordinates</TableCell>
-                  <TableCell>Radius (m)</TableCell>
-                  <TableCell align="center">Actions</TableCell>
+                  <TableCell sx={{ width: '25%' }}>Name</TableCell>
+                  <TableCell sx={{ width: '25%' }}>Institution</TableCell>
+                  <TableCell sx={{ width: '20%' }}>Coordinates</TableCell>
+                  <TableCell sx={{ width: '15%' }}>Radius (m)</TableCell>
+                  <TableCell align="center" sx={{ width: '15%' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -221,7 +229,7 @@ const VenuesPage: React.FC = () => {
                 ) : (
                   venues.map((venue) => (
                     <TableRow key={venue.id}>
-                      <TableCell>{venue.name}</TableCell>
+                      <TableCell sx={{ pl: 2 }}>{venue.name}</TableCell>
                       <TableCell>{getInstitutionName(venue.institution_id)}</TableCell>
                       <TableCell>
                         {venue.latitude && venue.longitude 
@@ -349,6 +357,7 @@ const VenuesPage: React.FC = () => {
 };
 
 export default VenuesPage;
+
 
 
 
