@@ -23,6 +23,7 @@ import axios from 'axios';
 interface FlaggedLog {
   id: number;
   session_id: string;
+  roll_no: string;
   reason: string;
   details: string;
   timestamp: string;
@@ -41,6 +42,8 @@ const FlaggedLogsPage: React.FC = () => {
     const fetchFlaggedLogs = async () => {
       try {
         setLoading(true);
+        console.log("Fetching flagged logs with token:", token ? "Token exists" : "No token");
+        
         const response = await axios.get(
           'https://qr-backend-1-pq5i.onrender.com/api/v1/admin/flagged-logs',
           {
@@ -48,7 +51,9 @@ const FlaggedLogsPage: React.FC = () => {
           }
         );
         
+        console.log("Flagged logs response:", response.data);
         setLogs(response.data);
+        setFilteredLogs(response.data);  // Make sure to set filtered logs too
         setError('');
       } catch (err) {
         console.error("Error fetching flagged logs:", err);
@@ -143,6 +148,7 @@ const FlaggedLogsPage: React.FC = () => {
               <TableHead>
                 <TableRow>
                   <TableCell>Session ID</TableCell>
+                  <TableCell>Roll No</TableCell>
                   <TableCell>Reason</TableCell>
                   <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>Details</TableCell>
                   <TableCell>Timestamp</TableCell>
@@ -153,6 +159,7 @@ const FlaggedLogsPage: React.FC = () => {
                   filteredLogs.map((log) => (
                     <TableRow key={log.id} hover>
                       <TableCell>{log.session_id}</TableCell>
+                      <TableCell>{log.roll_no}</TableCell>
                       <TableCell>{log.reason}</TableCell>
                       <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
                         <Tooltip title={log.details} arrow placement="top">
@@ -173,7 +180,7 @@ const FlaggedLogsPage: React.FC = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} align="center">
+                    <TableCell colSpan={5} align="center">
                       No flagged logs found
                     </TableCell>
                   </TableRow>
@@ -188,4 +195,5 @@ const FlaggedLogsPage: React.FC = () => {
 };
 
 export default FlaggedLogsPage;
+
 

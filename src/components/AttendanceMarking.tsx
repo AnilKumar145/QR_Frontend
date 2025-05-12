@@ -223,26 +223,32 @@ export const AttendanceMarking: React.FC = () => {
             // Handle success...
             setSuccess(true);
         } catch (error) {
-            // Improve error handling
             console.error('Error submitting attendance:', error);
+            
             if (axios.isAxiosError(error) && error.response) {
-                // Check if it's an invalid location error
                 const errorData = error.response.data;
                 
-                if (errorData.error === 'invalid_location' && errorData.details) {
-                    // Format a user-friendly error message with distance information
-                    const distance = errorData.details.distance_meters;
-                    const venueName = errorData.details.venue_name || 'venue';
-                    const maxDistance = errorData.details.max_allowed_distance_meters;
-                    
-                    setError(
-                        `Your location is ${Math.round(distance)}m away from ${venueName}. 
-                        Maximum allowed distance is ${maxDistance}m. 
-                        Please ensure you are within venue boundaries.`
-                    );
+                // Check if the error is in the expected format with detail property
+                if (errorData.detail && typeof errorData.detail === 'object') {
+                    if (errorData.detail.error === 'invalid_location') {
+                        // Format a user-friendly error message with distance information
+                        const details = errorData.detail.details;
+                        const distance = Math.round(details.distance_meters);
+                        const venueName = details.venue_name || 'venue';
+                        const maxDistance = details.max_allowed_distance_meters;
+                        
+                        setError(
+                            `Your location is ${distance}m away from ${venueName}. 
+                            Maximum allowed distance is ${maxDistance}m. 
+                            Please ensure you are within venue boundaries.`
+                        );
+                    } else {
+                        // For other structured errors, use the message from the detail
+                        setError(errorData.detail.message || JSON.stringify(errorData.detail));
+                    }
                 } else {
-                    // For other errors, use the message from the server
-                    setError(`Failed to submit attendance: ${errorData.message || JSON.stringify(errorData)}`);
+                    // For simple error messages
+                    setError(`Failed to submit attendance: ${errorData.detail || JSON.stringify(errorData)}`);
                 }
             } else {
                 setError('Failed to submit attendance. Please try again.');
@@ -531,6 +537,7 @@ export const AttendanceMarking: React.FC = () => {
         </Card>
     );
 };
+
 
 
 
