@@ -19,6 +19,8 @@ import VenuesPage from './components/VenuesPage';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import theme from './theme';
+// Import the missing components
+import VenueAttendancePage from './components/VenueAttendancePage';
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
@@ -101,6 +103,14 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
+              <Route 
+                path="/venue-attendance" 
+                element={
+                  <ProtectedRoute>
+                    <VenueAttendancePage />
+                  </ProtectedRoute>
+                } 
+              />
               <Route path="*" element={<NotFound />} />
             </Route>
             
@@ -115,5 +125,8 @@ function App() {
 }
 
 export default App;
+
+
+
 
 
