@@ -16,7 +16,8 @@ import {
   Toolbar,
   Container,
   IconButton,
-  Tooltip
+  Tooltip,
+  Paper,
 } from '@mui/material';
 import { 
   People as PeopleIcon,
@@ -29,6 +30,7 @@ import {
   Dashboard as DashboardIcon,
   Logout as LogoutIcon
 } from '@mui/icons-material';
+import VenueAttendanceStats from './VenueAttendanceStats';
 
 interface AttendanceRecord {
   id: number;
@@ -296,210 +298,228 @@ const AdminDashboard: React.FC = () => {
           </Alert>
         )}
 
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
-          gap: '16px',
-          marginBottom: '24px'
+        <Box sx={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          gap: 3 
         }}>
           {/* Total Attendance Card */}
-          <Card 
-            sx={{ 
-              height: '100%', 
-              display: 'flex', 
-              flexDirection: 'column',
-              cursor: 'pointer',
-              '&:hover': {
-                boxShadow: 6,
-                transform: 'translateY(-4px)',
-                transition: 'all 0.3s'
-              }
-            }}
-            onClick={() => navigate('/admin/attendance')}
-          >
-            <CardContent>
-              <Box display="flex" alignItems="center" mb={2}>
-                <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
-                  <PeopleIcon />
-                </Avatar>
-                <Typography variant="h6">Total Attendance</Typography>
-              </Box>
-              <Typography variant="h3" component="div" align="center" sx={{ my: 2 }}>
-                {totalAttendance}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" align="center">
-                View all attendance records
-              </Typography>
-            </CardContent>
-          </Card>
+          <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(33.333% - 16px)' } }}>
+            <Card 
+              sx={{ 
+                height: '100%', 
+                display: 'flex', 
+                flexDirection: 'column',
+                cursor: 'pointer',
+                '&:hover': {
+                  boxShadow: 6,
+                  transform: 'translateY(-4px)',
+                  transition: 'all 0.3s'
+                }
+              }}
+              onClick={() => navigate('/admin/attendance')}
+            >
+              <CardContent>
+                <Box display="flex" alignItems="center" mb={2}>
+                  <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
+                    <PeopleIcon />
+                  </Avatar>
+                  <Typography variant="h6">Total Attendance</Typography>
+                </Box>
+                <Typography variant="h3" component="div" align="center" sx={{ my: 2 }}>
+                  {totalAttendance}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" align="center">
+                  View all attendance records
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
 
           {/* Flagged Logs Card */}
-          <Card 
-            sx={{ 
-              height: '100%', 
-              display: 'flex', 
-              flexDirection: 'column',
-              cursor: 'pointer',
-              '&:hover': {
-                boxShadow: 6,
-                transform: 'translateY(-4px)',
-                transition: 'all 0.3s'
-              }
-            }}
-            onClick={() => navigate('/admin/flagged-logs')}
-          >
-            <CardContent>
-              <Box display="flex" alignItems="center" mb={2}>
-                <Avatar sx={{ bgcolor: 'error.main', mr: 2 }}>
-                  <LocationOffIcon />
-                </Avatar>
-                <Typography variant="h6">Flagged Logs</Typography>
-              </Box>
-              <Typography variant="h3" component="div" align="center" sx={{ my: 2 }}>
-                {flaggedLogs.length}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" align="center">
-                View all flagged attendance logs
-              </Typography>
-            </CardContent>
-          </Card>
+          <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(33.333% - 16px)' } }}>
+            <Card 
+              sx={{ 
+                height: '100%', 
+                display: 'flex', 
+                flexDirection: 'column',
+                cursor: 'pointer',
+                '&:hover': {
+                  boxShadow: 6,
+                  transform: 'translateY(-4px)',
+                  transition: 'all 0.3s'
+                }
+              }}
+              onClick={() => navigate('/admin/flagged-logs')}
+            >
+              <CardContent>
+                <Box display="flex" alignItems="center" mb={2}>
+                  <Avatar sx={{ bgcolor: 'error.main', mr: 2 }}>
+                    <LocationOffIcon />
+                  </Avatar>
+                  <Typography variant="h6">Flagged Logs</Typography>
+                </Box>
+                <Typography variant="h3" component="div" align="center" sx={{ my: 2 }}>
+                  {flaggedLogs.length}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" align="center">
+                  View all flagged attendance logs
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
 
           {/* Student Selfies Card */}
-          <Card 
-            sx={{ 
-              height: '100%', 
-              display: 'flex', 
-              flexDirection: 'column',
-              cursor: 'pointer',
-              '&:hover': {
-                boxShadow: 6,
-                transform: 'translateY(-4px)',
-                transition: 'all 0.3s'
-              }
-            }}
-            onClick={() => navigate('/admin/selfies')}
-          >
-            <CardContent>
-              <Box display="flex" alignItems="center" mb={2}>
-                <Avatar sx={{ bgcolor: 'info.main', mr: 2 }}>
-                  <PhotoLibraryIcon />
-                </Avatar>
-                <Typography variant="h6">Student Selfies</Typography>
-              </Box>
-              <Typography variant="h3" component="div" align="center" sx={{ my: 2 }}>
-                {totalAttendance}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" align="center">
-                View all student selfies
-              </Typography>
-            </CardContent>
-          </Card>
+          <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(33.333% - 16px)' } }}>
+            <Card 
+              sx={{ 
+                height: '100%', 
+                display: 'flex', 
+                flexDirection: 'column',
+                cursor: 'pointer',
+                '&:hover': {
+                  boxShadow: 6,
+                  transform: 'translateY(-4px)',
+                  transition: 'all 0.3s'
+                }
+              }}
+              onClick={() => navigate('/admin/selfies')}
+            >
+              <CardContent>
+                <Box display="flex" alignItems="center" mb={2}>
+                  <Avatar sx={{ bgcolor: 'info.main', mr: 2 }}>
+                    <PhotoLibraryIcon />
+                  </Avatar>
+                  <Typography variant="h6">Student Selfies</Typography>
+                </Box>
+                <Typography variant="h3" component="div" align="center" sx={{ my: 2 }}>
+                  {totalAttendance}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" align="center">
+                  View all student selfies
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
 
           {/* Daily Statistics Card */}
-          <Card 
-            sx={{ 
-              height: '100%', 
-              display: 'flex', 
-              flexDirection: 'column',
-              cursor: 'pointer',
-              '&:hover': {
-                boxShadow: 6,
-                transform: 'translateY(-4px)',
-                transition: 'all 0.3s'
-              }
-            }}
-            onClick={handleViewStatistics}
-          >
-            <CardContent>
-              <Box display="flex" alignItems="center" mb={2}>
-                <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
-                  <TrendingUpIcon />
-                </Avatar>
-                <Typography variant="h6">Daily Statistics</Typography>
-              </Box>
-              <Typography variant="h3" component="div" align="center" sx={{ my: 2 }}>
-                {statsLoading ? (
-                  <CircularProgress size={40} />
-                ) : (
-                  dailyStats ? Object.keys(dailyStats).length : '0'
-                )}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" align="center">
-                {statsLoading ? 'Loading statistics...' : 'Daily attendance trends'}
-              </Typography>
-            </CardContent>
-          </Card>
+          <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(33.333% - 16px)' } }}>
+            <Card 
+              sx={{ 
+                height: '100%', 
+                display: 'flex', 
+                flexDirection: 'column',
+                cursor: 'pointer',
+                '&:hover': {
+                  boxShadow: 6,
+                  transform: 'translateY(-4px)',
+                  transition: 'all 0.3s'
+                }
+              }}
+              onClick={handleViewStatistics}
+            >
+              <CardContent>
+                <Box display="flex" alignItems="center" mb={2}>
+                  <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
+                    <TrendingUpIcon />
+                  </Avatar>
+                  <Typography variant="h6">Daily Statistics</Typography>
+                </Box>
+                <Typography variant="h3" component="div" align="center" sx={{ my: 2 }}>
+                  {statsLoading ? (
+                    <CircularProgress size={40} />
+                  ) : (
+                    dailyStats ? Object.keys(dailyStats).length : '0'
+                  )}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" align="center">
+                  {statsLoading ? 'Loading statistics...' : 'Daily attendance trends'}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
 
           {/* Valid Locations Card */}
-          <Card 
-            sx={{ 
-              height: '100%', 
-              display: 'flex', 
-              flexDirection: 'column',
-              cursor: 'pointer',
-              '&:hover': {
-                boxShadow: 6,
-                transform: 'translateY(-4px)',
-                transition: 'all 0.3s'
-              }
-            }}
-            onClick={handleViewStatistics}
-          >
-            <CardContent>
-              <Box display="flex" alignItems="center" mb={2}>
-                <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
-                  <LocationOnIcon />
-                </Avatar>
-                <Typography variant="h6">Valid Locations</Typography>
-              </Box>
-              <Typography variant="h3" component="div" align="center" sx={{ my: 2 }}>
-                {statsLoading ? (
-                  <CircularProgress size={40} />
-                ) : (
-                  summaryStats?.valid_locations || '0'
-                )}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" align="center">
-                Attendance from valid locations
-              </Typography>
-            </CardContent>
-          </Card>
+          <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(33.333% - 16px)' } }}>
+            <Card 
+              sx={{ 
+                height: '100%', 
+                display: 'flex', 
+                flexDirection: 'column',
+                cursor: 'pointer',
+                '&:hover': {
+                  boxShadow: 6,
+                  transform: 'translateY(-4px)',
+                  transition: 'all 0.3s'
+                }
+              }}
+              onClick={handleViewStatistics}
+            >
+              <CardContent>
+                <Box display="flex" alignItems="center" mb={2}>
+                  <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
+                    <LocationOnIcon />
+                  </Avatar>
+                  <Typography variant="h6">Valid Locations</Typography>
+                </Box>
+                <Typography variant="h3" component="div" align="center" sx={{ my: 2 }}>
+                  {statsLoading ? (
+                    <CircularProgress size={40} />
+                  ) : (
+                    summaryStats?.valid_locations || '0'
+                  )}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" align="center">
+                  Attendance from valid locations
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
 
           {/* Summary Statistics Card */}
-          <Card 
-            sx={{ 
-              height: '100%', 
-              display: 'flex', 
-              flexDirection: 'column',
-              cursor: 'pointer',
-              '&:hover': {
-                boxShadow: 6,
-                transform: 'translateY(-4px)',
-                transition: 'all 0.3s'
-              }
-            }}
-            onClick={handleViewStatistics}
-          >
-            <CardContent>
-              <Box display="flex" alignItems="center" mb={2}>
-                <Avatar sx={{ bgcolor: 'secondary.main', mr: 2 }}>
-                  <PieChartIcon />
-                </Avatar>
-                <Typography variant="h6">Summary Stats</Typography>
-              </Box>
-              <Typography variant="h3" component="div" align="center" sx={{ my: 2 }}>
-                {statsLoading ? (
-                  <CircularProgress size={40} />
-                ) : (
-                  summaryStats?.total_attendance || '0'
-                )}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" align="center">
-                Total attendance summary
-              </Typography>
-            </CardContent>
-          </Card>
-        </div>
+          <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(33.333% - 16px)' } }}>
+            <Card 
+              sx={{ 
+                height: '100%', 
+                display: 'flex', 
+                flexDirection: 'column',
+                cursor: 'pointer',
+                '&:hover': {
+                  boxShadow: 6,
+                  transform: 'translateY(-4px)',
+                  transition: 'all 0.3s'
+                }
+              }}
+              onClick={handleViewStatistics}
+            >
+              <CardContent>
+                <Box display="flex" alignItems="center" mb={2}>
+                  <Avatar sx={{ bgcolor: 'secondary.main', mr: 2 }}>
+                    <PieChartIcon />
+                  </Avatar>
+                  <Typography variant="h6">Summary Stats</Typography>
+                </Box>
+                <Typography variant="h3" component="div" align="center" sx={{ my: 2 }}>
+                  {statsLoading ? (
+                    <CircularProgress size={40} />
+                  ) : (
+                    summaryStats?.total_attendance || '0'
+                  )}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" align="center">
+                  Total attendance summary
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
+
+          {/* Venue-wise attendance stats */}
+          <Box sx={{ width: '100%' }}>
+            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
+              <VenueAttendanceStats />
+            </Paper>
+          </Box>
+        </Box>
       </Container>
     </Box>
   );

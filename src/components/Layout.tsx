@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { 
   Box, 
   Drawer, 
@@ -7,6 +7,7 @@ import {
   Typography, 
   Divider, 
   List, 
+  ListItem,
   ListItemButton, 
   ListItemIcon, 
   ListItemText, 
@@ -15,7 +16,8 @@ import {
   useMediaQuery, 
   Avatar,
   Container,
-  alpha
+  alpha,
+  Collapse
 } from '@mui/material';
 import { 
   Menu as MenuIcon, 
@@ -25,9 +27,21 @@ import {
   Warning as WarningIcon,
   BarChart as BarChartIcon,
   QrCode as QrCodeIcon,
-  ChevronLeft as ChevronLeftIcon
+  ChevronLeft as ChevronLeftIcon,
+  LocationOn as LocationOnIcon,
+  ExpandLess,
+  ExpandMore
 } from '@mui/icons-material';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { AuthContext } from '../contexts/AuthContext';
+
+// Define venue type to avoid using 'any'
+interface VenueStats {
+  venue_id: number;
+  venue_name: string;
+  total_attendance: number;
+}
 
 const drawerWidth = 240;
 
@@ -37,6 +51,7 @@ export const Layout: React.FC = () => {
   const [open, setOpen] = useState(!isMobile);
   const location = useLocation();
   const navigate = useNavigate();
+  const { token } = useContext(AuthContext);
 
   const handleDrawerToggle = () => {
     setOpen(!open);
@@ -63,6 +78,31 @@ export const Layout: React.FC = () => {
     { text: 'Statistics', icon: <BarChartIcon />, path: '/admin/statistics' },
     { text: 'Generate QR', icon: <QrCodeIcon />, path: '/' }
   ];
+
+  const [venues, setVenues] = useState<{id: number, name: string, count: number}[]>([]);
+  const [venuesOpen, setVenuesOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchVenues = async () => {
+      if (!token) return;
+      
+      try {
+        const response = await axios.get<VenueStats[]>('https://qr-backend-1-pq5i.onrender.com/api/v1/admin/statistics/venue', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        
+        setVenues(response.data.map((v: VenueStats) => ({
+          id: v.venue_id,
+          name: v.venue_name,
+          count: v.total_attendance
+        })));
+      } catch (err) {
+        console.error("Error fetching venue stats:", err);
+      }
+    };
+    
+    fetchVenues();
+  }, [token]);
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
@@ -193,6 +233,34 @@ export const Layout: React.FC = () => {
             </ListItemButton>
           ))}
         </List>
+        <Divider sx={{ my: 1 }} />
+        <ListItemButton onClick={() => setVenuesOpen(!venuesOpen)}>
+          <ListItemIcon>
+            <LocationOnIcon />
+          </ListItemIcon>
+          <ListItemText primary="Venues" />
+          {venuesOpen ? <ExpandLess /> : <ExpandMore />}
+        </ListItemButton>
+        <Collapse in={venuesOpen} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {venues.map(venue => (
+              <ListItemButton key={venue.id} sx={{ pl: 4 }}>
+                <ListItemIcon>
+                  <LocationOnIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary={venue.name} 
+                  secondary={`${venue.count} students`} 
+                />
+              </ListItemButton>
+            ))}
+            {venues.length === 0 && (
+              <ListItem sx={{ pl: 4 }}>
+                <ListItemText secondary="No venue data" />
+              </ListItem>
+            )}
+          </List>
+        </Collapse>
       </Drawer>
 
       <Box
@@ -225,5 +293,8 @@ export const Layout: React.FC = () => {
     </Box>
   );
 };
+
+
+
 
 

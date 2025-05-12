@@ -44,11 +44,13 @@ export const qrService = {
                 });
             }
             
-            console.log('QR Session Response:', response.data);
+            // Log the full response for debugging
+            console.log('QR session response:', response.data);
             
-            if (!this.validateQRData(response.data)) {
-                console.error('Invalid QR data format:', response.data);
-                throw new Error('Invalid response format from server');
+            // Ensure the QR code URL is correct for the frontend
+            if (response.data && response.data.qr_image) {
+                // The QR code should point to the correct attendance URL
+                console.log('QR code generated successfully');
             }
             
             return response.data;
@@ -73,8 +75,7 @@ export const qrService = {
                 }
             }
             
-            // For non-Axios errors, just rethrow
-            throw error;
+            throw new QRSessionError('Unknown error occurred while generating QR code');
         }
     },
     

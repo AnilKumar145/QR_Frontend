@@ -2,31 +2,23 @@ import React, { useState, useEffect, useContext } from 'react';
 import { 
   Box, 
   Typography, 
-  Container, 
   TextField, 
   InputAdornment, 
   Card,
   CardContent, 
   CircularProgress, 
   Alert, 
-  AppBar, 
-  Toolbar, 
-  IconButton,
   Paper,
   Chip,
   Divider,
-  Button,
   Skeleton
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { 
   Search as SearchIcon,
-  ArrowBack as ArrowBackIcon,
   LocationOn as LocationOnIcon,
-  LocationOff as LocationOffIcon,
-  Dashboard as DashboardIcon,
-  Logout as LogoutIcon
+  LocationOff as LocationOffIcon
 } from '@mui/icons-material';
 import axios, { AxiosError } from 'axios';
 
@@ -50,59 +42,49 @@ interface ErrorResponse {
   detail?: string;
 }
 
+// Function to generate placeholder image based on initials
+const getInitialsPlaceholder = (name: string): string => {
+  const initials = name
+    .split(' ')
+    .map(part => part.charAt(0))
+    .join('')
+    .toUpperCase()
+    .substring(0, 2);
+  
+  // Generate a deterministic color based on the name
+  const hue = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 360;
+  const color = `hsl(${hue}, 70%, 60%)`;
+  
+  // Create a canvas to generate the image
+  const canvas = document.createElement('canvas');
+  canvas.width = 200;
+  canvas.height = 200;
+  const ctx = canvas.getContext('2d');
+  
+  if (ctx) {
+    // Fill background
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Add text
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 80px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(initials, canvas.width / 2, canvas.height / 2);
+  }
+  
+  return canvas.toDataURL('image/png');
+};
+
 const StudentSelfiesPage: React.FC = () => {
-  const { token, logout } = useContext(AuthContext);
+  const { token } = useContext(AuthContext);
   const navigate = useNavigate();
   const [selfies, setSelfies] = useState<AttendanceRecord[]>([]);
   const [filteredSelfies, setFilteredSelfies] = useState<AttendanceRecord[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [imageLoading, setImageLoading] = useState<{[key: number]: boolean}>({});
-
-  // Add a function to generate a placeholder image based on student name
-  const getInitialsPlaceholder = (name: string) => {
-    // Get initials from name (handle empty names)
-    const initials = name
-      ? name
-          .split(' ')
-          .map(part => part[0] || '')
-          .join('')
-          .toUpperCase()
-          .substring(0, 2)
-      : '??';
-    
-    // Generate a random but consistent color based on the name
-    const getColorFromName = (name: string) => {
-      let hash = 0;
-      for (let i = 0; i < name.length; i++) {
-        hash = name.charCodeAt(i) + ((hash << 5) - hash);
-      }
-      const hue = Math.abs(hash % 360);
-      return `hsl(${hue}, 70%, 60%)`;
-    };
-    
-    // Create a canvas element
-    const canvas = document.createElement('canvas');
-    canvas.width = 200;
-    canvas.height = 200;
-    const context = canvas.getContext('2d');
-    
-    if (context) {
-      // Fill background
-      context.fillStyle = getColorFromName(name || 'Unknown');
-      context.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // Add text
-      context.font = 'bold 80px Arial';
-      context.fillStyle = 'white';
-      context.textAlign = 'center';
-      context.textBaseline = 'middle';
-      context.fillText(initials, canvas.width / 2, canvas.height / 2);
-    }
-    
-    return canvas.toDataURL('image/png');
-  };
 
   // Function to determine the correct image source
   const getImageSource = (selfie: AttendanceRecord) => {
@@ -116,18 +98,20 @@ const StudentSelfiesPage: React.FC = () => {
       return selfie.selfie_path;
     }
     
-    // Handle paths that start with static/
-    if (selfie.selfie_path.startsWith('static/') || selfie.selfie_path.startsWith('/static/')) {
-      return `https://qr-backend-1-pq5i.onrender.com/${selfie.selfie_path.replace(/^\//, '')}`;
-    }
-    
-    // If path exists but doesn't match known patterns, try direct URL
-    return `https://qr-backend-1-pq5i.onrender.com${selfie.selfie_path.startsWith('/') ? '' : '/'}${selfie.selfie_path}`;
+    // Try the direct selfie endpoint first
+    return `https://qr-backend-1-pq5i.onrender.com/api/v1/attendance/selfie/${selfie.id}`;
   };
 
   // Add a function to handle image errors
-  const handleImageError = (id: number) => {
-    console.log(`Image failed to load for ID: ${id}`);
+  const handleImageError = (id: number, name: string) => {
+    console.log(`Image failed to load for ID: ${id}, using placeholder`);
+    
+    // When image fails to load, set a placeholder based on name
+    const img = document.getElementById(`selfie-img-${id}`) as HTMLImageElement;
+    if (img) {
+      img.src = getInitialsPlaceholder(name);
+    }
+    
     setImageLoading(prev => ({
       ...prev,
       [id]: false
@@ -163,11 +147,8 @@ const StudentSelfiesPage: React.FC = () => {
         setImageLoading(initialLoadingState);
         setSelfies(selfiesData);
         setFilteredSelfies(selfiesData);
-        
-        setError('');
       } catch (err) {
         const axiosError = err as AxiosError<ErrorResponse>;
-        setError(axiosError.response?.data?.detail || 'Failed to fetch selfies');
         console.error("Error fetching selfies:", axiosError);
       } finally {
         setLoading(false);
@@ -194,15 +175,6 @@ const StudentSelfiesPage: React.FC = () => {
     setSearchQuery(event.target.value);
   };
 
-  const handleBackToDashboard = () => {
-    navigate('/admin/dashboard');
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/admin/login');
-  };
-
   const handleImageLoad = (id: number) => {
     setImageLoading(prev => ({
       ...prev,
@@ -212,91 +184,21 @@ const StudentSelfiesPage: React.FC = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-        <AppBar position="static">
-          <Toolbar>
-            <IconButton
-              edge="start"
-              color="inherit"
-              sx={{ mr: 2 }}
-            >
-              <ArrowBackIcon />
-            </IconButton>
-            <DashboardIcon sx={{ mr: 2 }} />
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Student Selfies
-            </Typography>
-          </Toolbar>
-        </AppBar>
-        
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4, flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-          <CircularProgress size={60} thickness={4} />
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Loading student selfies...
-          </Typography>
-        </Container>
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+        <CircularProgress size={60} thickness={4} />
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Loading student selfies...
+        </Typography>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ flexGrow: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton
-            edge="start"
-            color="inherit"
-            onClick={handleBackToDashboard}
-            sx={{ mr: 2 }}
-          >
-            <ArrowBackIcon />
-          </IconButton>
-          <DashboardIcon sx={{ mr: 2 }} />
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-            Student Attendance Records
-          </Typography>
-          <Button color="inherit" onClick={handleLogout} sx={{ display: { xs: 'none', sm: 'block' } }}>
-            Logout
-          </Button>
-          <IconButton 
-            color="inherit" 
-            onClick={handleLogout}
-            sx={{ display: { xs: 'block', sm: 'none' } }}
-          >
-            <LogoutIcon />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
-
-      <Container 
-        maxWidth="lg" 
-        sx={{ 
-          mt: { xs: 2, sm: 4 }, 
-          mb: { xs: 2, sm: 4 },
-          px: { xs: 2, sm: 3 },
-          flexGrow: 1
-        }}
-      >
-        {error && (
-          <Alert 
-            severity="error" 
-            sx={{ 
-              mb: 3,
-              borderRadius: 2,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-            }}
-          >
-            {error}
-            <Button 
-              color="inherit" 
-              size="small" 
-              onClick={() => window.location.reload()}
-              sx={{ ml: 2 }}
-            >
-              Retry
-            </Button>
-          </Alert>
-        )}
+    <Box sx={{ flexGrow: 1, minHeight: '100%', display: 'flex', flexDirection: 'column', p: 3 }}>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h5" component="h1" sx={{ fontWeight: 600, mb: 2 }}>
+          Student Attendance Records
+        </Typography>
 
         <Paper 
           sx={{ 
@@ -409,22 +311,8 @@ const StudentSelfiesPage: React.FC = () => {
                     }}
                     onLoad={() => handleImageLoad(selfie.id)}
                     onError={() => {
-                      handleImageError(selfie.id);
+                      handleImageError(selfie.id, selfie.name);
                       // The error will cause it to fall back to the placeholder
-                    }}
-                  />
-                  <Chip
-                    icon={selfie.is_valid_location ? <LocationOnIcon /> : <LocationOffIcon />}
-                    label={selfie.is_valid_location ? "Valid Location" : "Invalid Location"}
-                    color={selfie.is_valid_location ? "success" : "error"}
-                    size="small"
-                    sx={{
-                      position: 'absolute',
-                      top: 8,
-                      right: 8,
-                      backgroundColor: selfie.is_valid_location ? 'rgba(46, 125, 50, 0.85)' : 'rgba(211, 47, 47, 0.85)',
-                      color: 'white',
-                      zIndex: 1
                     }}
                   />
                 </Box>
@@ -463,12 +351,16 @@ const StudentSelfiesPage: React.FC = () => {
             </div>
           )}
         </div>
-      </Container>
+      </Box>
     </Box>
   );
 };
 
 export default StudentSelfiesPage;
+
+
+
+
 
 
 
