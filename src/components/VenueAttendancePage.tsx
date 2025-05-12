@@ -105,6 +105,7 @@ const VenueAttendancePage: React.FC = () => {
   const fetchVenueStatistics = async (venueId: number) => {
     try {
       setLoading(true);
+      // Use the correct endpoint with the venue ID parameter
       const response = await axios.get(`https://qr-backend-1-pq5i.onrender.com/api/v1/admin/statistics/by-venue/${venueId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -354,6 +355,8 @@ const VenueAttendancePage: React.FC = () => {
 };
 
 export default VenueAttendancePage;
+
+
 
 
 
