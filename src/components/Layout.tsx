@@ -25,7 +25,8 @@ import {
   Warning as WarningIcon,
   BarChart as BarChartIcon,
   QrCode as QrCodeIcon,
-  ChevronLeft as ChevronLeftIcon
+  ChevronLeft as ChevronLeftIcon,
+  LocationOn as LocationIcon
 } from '@mui/icons-material';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
@@ -52,6 +53,7 @@ export const Layout: React.FC = () => {
     if (path === '/admin/selfies') return 'Student Selfies';
     if (path === '/admin/flagged-logs') return 'Flagged Logs';
     if (path === '/admin/statistics') return 'Statistics';
+    if (path === '/admin/venues-attendance') return 'Venue Attendance';
     return 'QR Attendance System';
   };
 
@@ -60,6 +62,7 @@ export const Layout: React.FC = () => {
     { text: 'Attendance Records', icon: <PeopleIcon />, path: '/admin/attendance' },
     { text: 'Student Selfies', icon: <PhotoLibraryIcon />, path: '/admin/selfies' },
     { text: 'Flagged Logs', icon: <WarningIcon />, path: '/admin/flagged-logs' },
+    { text: 'Venue Attendance', icon: <LocationIcon />, path: '/admin/venues-attendance' },
     { text: 'Statistics', icon: <BarChartIcon />, path: '/admin/statistics' },
     { text: 'Generate QR', icon: <QrCodeIcon />, path: '/' }
   ];
@@ -208,6 +211,7 @@ export const Layout: React.FC = () => {
     </Box>
   );
 };
+
 
 
 

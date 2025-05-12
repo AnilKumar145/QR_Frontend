@@ -358,6 +358,47 @@ export const Home: React.FC = () => {
                 </Button>
               </CardActions>
             </Card>
+
+            <Card 
+              sx={{ 
+                height: '100%', 
+                display: 'flex', 
+                flexDirection: 'column',
+                transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: 4,
+                },
+                cursor: 'pointer'
+              }}
+              onClick={() => handleCardClick('/admin/venues-attendance')}
+            >
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Box display="flex" alignItems="center" mb={2}>
+                  <Avatar sx={{ bgcolor: theme.palette.info.main, mr: 2 }}>
+                    <LocationOn />
+                  </Avatar>
+                  <Typography variant="h5" component="h2">
+                    Venue Attendance
+                  </Typography>
+                </Box>
+                <Typography variant="body1" color="text.secondary" paragraph>
+                  View attendance records organized by venues and institutions.
+                </Typography>
+              </CardContent>
+              <CardActions>
+                <Button 
+                  size="small" 
+                  color="primary"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCardClick('/admin/venues-attendance');
+                  }}
+                >
+                  View Venues
+                </Button>
+              </CardActions>
+            </Card>
           </>
         )}
       </Box>
