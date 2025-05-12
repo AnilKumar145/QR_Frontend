@@ -46,14 +46,16 @@ const AdminLayout: React.FC = () => {
           overflowY: 'auto',
           height: 'calc(100vh - 64px)',
           bgcolor: '#f8fafc', // Light background for content area
+          display: 'flex',  // Add this to enable centering
+          justifyContent: 'center', // Center horizontally
         }}
       >
         <Box 
           sx={{ 
             maxWidth: '1400px', 
-            mx: 'auto',
             width: '100%',
-            pb: 4
+            pb: 4,
+            px: { xs: 2, sm: 3 }, // Add horizontal padding
           }}
         >
           <Outlet />
@@ -64,3 +66,4 @@ const AdminLayout: React.FC = () => {
 };
 
 export default AdminLayout;
+
