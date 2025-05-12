@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { 
   Box, 
   Paper, 
@@ -13,7 +12,9 @@ import {
   TextField, 
   InputAdornment, 
   CircularProgress,
-  Container
+  Container,
+  Tooltip,
+  Typography
 } from '@mui/material';
 import { Search as SearchIcon, Refresh as RefreshIcon } from '@mui/icons-material';
 import { AuthContext } from '../contexts/AuthContext';
@@ -29,8 +30,7 @@ interface FlaggedLog {
 
 const FlaggedLogsPage: React.FC = () => {
   const { token } = useContext(AuthContext);
-  const navigate = useNavigate();
-  const [flaggedLogs, setFlaggedLogs] = useState<FlaggedLog[]>([]);
+  const [logs, setLogs] = useState<FlaggedLog[]>([]);
   const [filteredLogs, setFilteredLogs] = useState<FlaggedLog[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -38,21 +38,20 @@ const FlaggedLogsPage: React.FC = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!token) {
-      navigate('/admin/login');
-      return;
-    }
-
     const fetchFlaggedLogs = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('https://qr-backend-1-pq5i.onrender.com/api/v1/admin/flagged-logs', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setFlaggedLogs(response.data);
-        setFilteredLogs(response.data);
+        const response = await axios.get(
+          'https://qr-backend-1-pq5i.onrender.com/api/v1/admin/flagged-logs',
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+        
+        setLogs(response.data);
         setError('');
       } catch (err) {
+        console.error("Error fetching flagged logs:", err);
         const error = err as { response?: { data?: { detail?: string } } };
         setError(error.response?.data?.detail || 'Failed to fetch flagged logs');
       } finally {
@@ -60,21 +59,23 @@ const FlaggedLogsPage: React.FC = () => {
       }
     };
 
-    fetchFlaggedLogs();
-  }, [token, navigate]);
+    if (token) {
+      fetchFlaggedLogs();
+    }
+  }, [token]);
 
   useEffect(() => {
     // Filter logs based on search query
     if (searchQuery.trim() === '') {
-      setFilteredLogs(flaggedLogs);
+      setFilteredLogs(logs);
     } else {
-      const filtered = flaggedLogs.filter(log => 
+      const filtered = logs.filter(log => 
         log.session_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         log.reason.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredLogs(filtered);
     }
-  }, [searchQuery, flaggedLogs]);
+  }, [searchQuery, logs]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
@@ -88,7 +89,7 @@ const FlaggedLogsPage: React.FC = () => {
       const response = await axios.get('https://qr-backend-1-pq5i.onrender.com/api/v1/admin/flagged-logs', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setFlaggedLogs(response.data);
+      setLogs(response.data);
       setFilteredLogs(response.data);
       setError('');
     } catch (err) {
@@ -153,7 +154,20 @@ const FlaggedLogsPage: React.FC = () => {
                     <TableRow key={log.id} hover>
                       <TableCell>{log.session_id}</TableCell>
                       <TableCell>{log.reason}</TableCell>
-                      <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{log.details}</TableCell>
+                      <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
+                        <Tooltip title={log.details} arrow placement="top">
+                          <Typography
+                            sx={{
+                              maxWidth: 250,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {log.details}
+                          </Typography>
+                        </Tooltip>
+                      </TableCell>
                       <TableCell>{new Date(log.timestamp).toLocaleString()}</TableCell>
                     </TableRow>
                   ))
