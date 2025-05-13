@@ -117,6 +117,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
           
           {isAuthenticated && (
             <>
+              {/* Group 1: Core Admin Pages */}
               <ListItemButton 
                 onClick={() => handleNavigation('/admin/dashboard')}
                 selected={location.pathname === '/admin/dashboard'}
@@ -197,7 +198,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
                   primaryTypographyProps={{ fontWeight: location.pathname === '/admin/selfies' ? 600 : 400 }}
                 />
               </ListItemButton>
-              
+
+              <Divider sx={{ my: 1 }} />
+
+              {/* Group 2: Management Pages */}
               <ListItemButton 
                 onClick={() => handleNavigation('/admin/institutions')}
                 selected={location.pathname === '/admin/institutions'}
@@ -251,7 +255,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
                   primaryTypographyProps={{ fontWeight: location.pathname === '/admin/venues' ? 600 : 400 }}
                 />
               </ListItemButton>
-              
+
+              <Divider sx={{ my: 1 }} />
+
+              {/* Group 3: Logs and Statistics */}
               <ListItemButton 
                 onClick={() => handleNavigation('/admin/flagged-logs')}
                 selected={location.pathname === '/admin/flagged-logs'}
