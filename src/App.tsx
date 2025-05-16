@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AttendanceMarking } from './components/AttendanceMarking';
+import  AttendanceMarking  from './components/AttendanceMarking';
 import { QRCodeDisplay } from './components/QRCodeDisplay';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
@@ -21,6 +20,8 @@ import { Home } from './pages/Home';
 import theme from './theme';
 // Import the missing components
 import VenueAttendancePage from './components/VenueAttendancePage';
+import Hero from './components/Hero'; // New component
+import Features from './components/Features'; // New component
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
@@ -117,6 +118,8 @@ function App() {
             {/* Routes outside the layout */}
             <Route path="/mark-attendance/:sessionId" element={<AttendanceMarking />} />
             <Route path="/attendance/:sessionId" element={<AttendanceMarking />} />
+            <Route path="/hero" element={<Hero />} /> // New route
+            <Route path="/features" element={<Features />} /> // New route
             <Route path="*" element={<Navigate to="/not-found" />} />
             <Route path="/not-found" element={<NotFound />} />
           </Routes>
@@ -127,10 +130,3 @@ function App() {
 }
 
 export default App;
-
-
-
-
-
-
-

@@ -1,131 +1,72 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Box, Button, TextField, Typography, Alert, Container, Paper, CircularProgress, Fade } from '@mui/material';
-import { AuthContext } from '../contexts/AuthContext';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import React, { useState } from 'react';
+import { Box, useTheme, useMediaQuery } from '@mui/material';
+import AdminHeader from './AdminHeader';
+import { Sidebar } from './Sidebar';
+import { Outlet, useLocation } from 'react-router-dom';
 
-const AdminLogin: React.FC = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const navigate = useNavigate();
-  const { login, isAuthenticated } = useContext(AuthContext);
+const AdminLayout: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const location = useLocation();
+  const handleSidebarToggle = () => {
 
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/admin/dashboard');
-    }
-  }, [isAuthenticated, navigate]);
+    setSidebarOpen(!sidebarOpen);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    
-    try {
-      // Use the login function from AuthContext
-      const success = await login(username, password);
-      
-      if (success) {
-        // Show success message before redirecting
-        setSuccess(true);
-        
-        // Redirect after a short delay to show the success message
-        setTimeout(() => {
-          navigate('/admin/dashboard');
-        }, 1500);
-      } else {
-        setError('Login failed. Please check your credentials.');
-      }
-    } catch (err) {
-      console.error('Login error:', err);
-      setError('Login failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  };
+
+  // Get page title based on current route for the header
+  const getPageTitle = () => {
+    const path = location.pathname;
+    if (path === '/admin/dashboard') return 'Admin Dashboard';
+    if (path === '/admin/attendance') return 'Attendance Records';
+    if (path === '/admin/selfies') return 'Student Selfies';
+    if (path === '/admin/institutions') return 'Institutions';
+    if (path === '/admin/venues') return 'Venues';
+    if (path === '/admin/flagged-logs') return 'Flagged Logs';
+    if (path === '/admin/statistics') return 'Statistics';
+    return 'Admin Panel';
   };
 
   return (
-    <Container maxWidth="xs" sx={{ mt: 8 }}>
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 2, position: 'relative' }}>
-        {success && (
-          <Fade in={success}>
-            <Box 
-              sx={{ 
-                position: 'absolute', 
-                top: 0, 
-                left: 0, 
-                right: 0, 
-                bottom: 0, 
-                display: 'flex', 
-                flexDirection: 'column',
-                alignItems: 'center', 
-                justifyContent: 'center',
-                backgroundColor: 'rgba(255,255,255,0.9)',
-                zIndex: 10,
-                borderRadius: 2
-              }}
-            >
-              <CheckCircleIcon color="success" sx={{ fontSize: 60, mb: 2 }} />
-              <Typography variant="h6" color="success.main">
-                Login Successful!
-              </Typography>
-              <Typography variant="body2" sx={{ mt: 1 }}>
-                Redirecting to dashboard...
-              </Typography>
-              <CircularProgress size={24} sx={{ mt: 2 }} />
-            </Box>
-          </Fade>
-        )}
-        
-        <Typography variant="h5" component="h2" align="center" gutterBottom>
-          Admin Login
-        </Typography>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-        <Box component="form" onSubmit={handleSubmit} noValidate>
-          <TextField
-            label="Username"
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-            required
-            autoFocus
-            disabled={loading || success}
-          />
-          <TextField
-            label="Password"
-            variant="outlined"
-            type="password"
-            fullWidth
-            margin="normal"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            disabled={loading || success}
-          />
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            sx={{ mt: 3 }}
-            disabled={loading || success}
-          >
-            {loading ? <CircularProgress size={24} /> : 'Login'}
-          </Button>
+    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      <AdminHeader onMenuClick={handleSidebarToggle} title={getPageTitle()} />
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: { xs: 2, sm: 3 },
+          width: { sm: `calc(100% - ${sidebarOpen ? 240 : 0}px)` },
+          mt: '64px', // AppBar height
+          ml: { sm: sidebarOpen ? '240px' : 0 },
+          transition: theme.transitions.create(['margin', 'width'], {
+            easing: theme.transitions.easing.easeOut,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
+          overflowY: 'auto',
+          height: 'calc(100vh - 64px)',
+          bgcolor: '#f8fafc', // Light background for content area
+          display: 'flex',  // Add this to enable centering
+          justifyContent: 'center', // Center horizontally
+        }}
+      >
+        <Box
+          sx={{
+            maxWidth: '1200px', // Reduced from 1400px
+            width: '100%',
+            pb: 4,
+          }}
+        >
+          <Outlet />
         </Box>
-      </Paper>
-    </Container>
+      </Box>
+    </Box>
   );
 };
+export default AdminLayout;
 
-export default AdminLogin;
+
+
+
+
