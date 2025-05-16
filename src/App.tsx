@@ -118,7 +118,6 @@ function App() {
             <Route path="/mark-attendance/:sessionId" element={<AttendanceMarking />} />
             <Route path="/attendance/:sessionId" element={<AttendanceMarking />} />
             <Route path="*" element={<Navigate to="/not-found" />} />
-            <Route path="/not-found" element={<NotFound />} />
           </Routes>
         </Router>
       </AuthProvider>
