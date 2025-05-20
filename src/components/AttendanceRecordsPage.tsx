@@ -14,6 +14,8 @@ import {
 } from '@mui/icons-material';
 import { AuthContext } from '../contexts/AuthContext';
 import axios from 'axios';
+import { Sidebar } from './Sidebar';
+import AdminHeader from './AdminHeader';
 
 interface AttendanceRecord {
   id: number;
@@ -36,6 +38,11 @@ const AttendanceRecordsPage: React.FC = () => {
   const [error, setError] = useState('');
   const [exportAnchorEl, setExportAnchorEl] = useState<null | HTMLElement>(null);
   const [exportLoading, setExportLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const handleSidebarToggle = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
 
   useEffect(() => {
     const fetchAttendance = async () => {
@@ -143,132 +150,153 @@ const AttendanceRecordsPage: React.FC = () => {
   };
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" component="h1" sx={{ fontWeight: 600 }}>
-          Attendance Records
-        </Typography>
-        
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Tooltip title="Refresh data">
-            <Button
+    <Box sx={{ display: 'flex', height: '100vh' }}>
+      <AdminHeader onMenuClick={handleSidebarToggle} title="Attendance Records" />
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          width: { sm: `calc(100% - ${sidebarOpen ? 240 : 0}px)` },
+          mt: '64px',
+          ml: { sm: sidebarOpen ? '240px' : 0 },
+          transition: theme => theme.transitions.create(['margin', 'width'], {
+            easing: theme.transitions.easing.easeOut,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
+          overflowY: 'auto'
+        }}
+      >
+        <Box sx={{ width: '100%' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Typography variant="h5" component="h1" sx={{ fontWeight: 600 }}>
+              Attendance Records
+            </Typography>
+            
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Tooltip title="Refresh data">
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  startIcon={<RefreshIcon />}
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  size="small"
+                >
+                  {refreshing ? 'Refreshing...' : 'Refresh'}
+                </Button>
+              </Tooltip>
+              
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<FileDownloadIcon />}
+                onClick={handleExportClick}
+                disabled={loading || refreshing || filteredAttendance.length === 0}
+                size="small"
+              >
+                Export
+              </Button>
+              <Menu
+                anchorEl={exportAnchorEl}
+                open={Boolean(exportAnchorEl)}
+                onClose={handleExportClose}
+              >
+                <MenuItem onClick={exportToExcel} disabled={exportLoading}>
+                  <ListItemIcon>
+                    <TableChartIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Export to Excel</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={exportToPDF} disabled={exportLoading}>
+                  <ListItemIcon>
+                    <PictureAsPdfIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Export to PDF</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={printRecords} disabled={exportLoading}>
+                  <ListItemIcon>
+                    <PrintIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Print Records</ListItemText>
+                </MenuItem>
+              </Menu>
+            </Box>
+          </Box>
+
+          <Paper sx={{ p: 3, mb: 3 }}>
+            <TextField
+              placeholder="Search by name or roll number"
               variant="outlined"
-              color="primary"
-              startIcon={<RefreshIcon />}
-              onClick={handleRefresh}
-              disabled={refreshing}
               size="small"
-            >
-              {refreshing ? 'Refreshing...' : 'Refresh'}
-            </Button>
-          </Tooltip>
-          
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<FileDownloadIcon />}
-            onClick={handleExportClick}
-            disabled={loading || refreshing || filteredAttendance.length === 0}
-            size="small"
-          >
-            Export
-          </Button>
-          <Menu
-            anchorEl={exportAnchorEl}
-            open={Boolean(exportAnchorEl)}
-            onClose={handleExportClose}
-          >
-            <MenuItem onClick={exportToExcel} disabled={exportLoading}>
-              <ListItemIcon>
-                <TableChartIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>Export to Excel</ListItemText>
-            </MenuItem>
-            <MenuItem onClick={exportToPDF} disabled={exportLoading}>
-              <ListItemIcon>
-                <PictureAsPdfIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>Export to PDF</ListItemText>
-            </MenuItem>
-            <MenuItem onClick={printRecords} disabled={exportLoading}>
-              <ListItemIcon>
-                <PrintIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>Print Records</ListItemText>
-            </MenuItem>
-          </Menu>
+              fullWidth
+              value={searchQuery}
+              onChange={handleSearchChange}
+              sx={{ mb: 3 }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            {loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                <CircularProgress />
+              </Box>
+            ) : error ? (
+              <Typography color="error" sx={{ p: 2 }}>
+                {error}
+              </Typography>
+            ) : (
+              <TableContainer>
+                <Table size="small" id="attendance-table">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Name</TableCell>
+                      <TableCell>Roll No</TableCell>
+                      <TableCell>Branch</TableCell>
+                      <TableCell>Section</TableCell>
+                      <TableCell>Timestamp</TableCell>
+                      <TableCell>Location</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {filteredAttendance.length > 0 ? (
+                      filteredAttendance.map((record) => (
+                        <TableRow key={record.id}>
+                          <TableCell>{record.name}</TableCell>
+                          <TableCell>{record.roll_no}</TableCell>
+                          <TableCell>{record.branch}</TableCell>
+                          <TableCell>{record.section}</TableCell>
+                          <TableCell>{new Date(record.timestamp).toLocaleString()}</TableCell>
+                          <TableCell>
+                            <Chip
+                              label={record.is_valid_location ? "Valid" : "Invalid"}
+                              color={record.is_valid_location ? "success" : "error"}
+                              size="small"
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} align="center">
+                          No records found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+          </Paper>
         </Box>
       </Box>
-
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <TextField
-          placeholder="Search by name or roll number"
-          variant="outlined"
-          size="small"
-          fullWidth
-          value={searchQuery}
-          onChange={handleSearchChange}
-          sx={{ mb: 3 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-        />
-
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-            <CircularProgress />
-          </Box>
-        ) : error ? (
-          <Typography color="error" sx={{ p: 2 }}>
-            {error}
-          </Typography>
-        ) : (
-          <TableContainer>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Roll No</TableCell>
-                  <TableCell>Branch</TableCell>
-                  <TableCell>Section</TableCell>
-                  <TableCell>Timestamp</TableCell>
-                  <TableCell>Location</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredAttendance.length > 0 ? (
-                  filteredAttendance.map((record) => (
-                    <TableRow key={record.id}>
-                      <TableCell>{record.name}</TableCell>
-                      <TableCell>{record.roll_no}</TableCell>
-                      <TableCell>{record.branch}</TableCell>
-                      <TableCell>{record.section}</TableCell>
-                      <TableCell>{new Date(record.timestamp).toLocaleString()}</TableCell>
-                      <TableCell>
-                        <Chip
-                          label={record.is_valid_location ? "Valid" : "Invalid"}
-                          color={record.is_valid_location ? "success" : "error"}
-                          size="small"
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center">
-                      No records found
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
-      </Paper>
     </Box>
   );
 };
@@ -296,6 +324,8 @@ export default AttendanceRecordsPage;
     }
   `}
 </style>
+
+
 
 
 
