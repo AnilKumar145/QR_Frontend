@@ -7,7 +7,10 @@ import {
   CircularProgress, 
   Alert, 
   Paper,
-  Button
+  Button,
+  Card,
+  CardContent,
+  useTheme
 } from '@mui/material';
 import { 
   LocationOn as LocationIcon, 
@@ -73,6 +76,7 @@ const VenueAttendancePage: React.FC = () => {
   const [venueStats, setVenueStats] = useState<VenueStatistics | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const theme = useTheme();
 
   const fetchInstitutionsAndVenues = async () => {
     try {
@@ -163,7 +167,14 @@ const VenueAttendancePage: React.FC = () => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        mb: 3,
+        flexDirection: { xs: 'column', sm: 'row' },
+        gap: { xs: 2, sm: 0 }
+      }}>
         <Typography variant="h5" component="h1" sx={{ fontWeight: 600 }}>
           Venue Attendance
         </Typography>
@@ -172,6 +183,7 @@ const VenueAttendancePage: React.FC = () => {
           variant="outlined" 
           onClick={handleRefresh}
           disabled={loading}
+          sx={{ alignSelf: { xs: 'stretch', sm: 'auto' } }}
         >
           Refresh
         </Button>
@@ -183,57 +195,80 @@ const VenueAttendancePage: React.FC = () => {
         </Alert>
       )}
 
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-        <Box sx={{ width: { xs: '100%', md: '25%' }, flexShrink: 0 }}>
-          <Paper sx={{ p: 2, height: '100%' }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Venues by Institution
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            
-            {institutions.map(institution => (
-              <Box key={institution.id} sx={{ mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <SchoolIcon sx={{ mr: 1, color: 'primary.main' }} />
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                    {institution.name}
-                  </Typography>
-                </Box>
+      <Box sx={{ 
+        display: 'flex', 
+        flexWrap: 'wrap', 
+        gap: 3,
+        height: 'calc(100% - 60px)'
+      }}>
+        <Box sx={{ 
+          width: { xs: '100%', md: '25%' }, 
+          flexShrink: 0,
+          height: { xs: 'auto', md: '100%' }
+        }}>
+          <Card 
+            sx={{ 
+              height: '100%',
+              borderRadius: 2,
+              boxShadow: theme.shadows[1]
+            }}
+          >
+            <CardContent sx={{ p: 2, height: '100%', '&:last-child': { pb: 2 } }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                Venues by Institution
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+              
+              <Box sx={{ 
+                height: 'calc(100% - 60px)',
+                overflowY: 'auto',
+                pr: 1
+              }}>
+                {institutions.map(institution => (
+                  <Box key={institution.id} sx={{ mb: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <SchoolIcon sx={{ mr: 1, color: 'primary.main' }} />
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                        {institution.name}
+                      </Typography>
+                    </Box>
+                    
+                    {venues
+                      .filter(venue => venue.institution_id === institution.id)
+                      .map(venue => (
+                        <Button
+                          key={venue.id}
+                          fullWidth
+                          variant={selectedVenue === venue.id ? "contained" : "outlined"}
+                          sx={{ 
+                            justifyContent: 'flex-start', 
+                            mb: 1,
+                            textTransform: 'none'
+                          }}
+                          startIcon={<LocationIcon />}
+                          onClick={() => handleVenueSelect(venue.id)}
+                        >
+                          {venue.name}
+                        </Button>
+                      ))
+                    }
+                    
+                    {venues.filter(venue => venue.institution_id === institution.id).length === 0 && (
+                      <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
+                        No venues for this institution
+                      </Typography>
+                    )}
+                  </Box>
+                ))}
                 
-                {venues
-                  .filter(venue => venue.institution_id === institution.id)
-                  .map(venue => (
-                    <Button
-                      key={venue.id}
-                      fullWidth
-                      variant={selectedVenue === venue.id ? "contained" : "outlined"}
-                      sx={{ 
-                        justifyContent: 'flex-start', 
-                        mb: 1,
-                        textTransform: 'none'
-                      }}
-                      startIcon={<LocationIcon />}
-                      onClick={() => handleVenueSelect(venue.id)}
-                    >
-                      {venue.name}
-                    </Button>
-                  ))
-                }
-                
-                {venues.filter(venue => venue.institution_id === institution.id).length === 0 && (
-                  <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
-                    No venues for this institution
+                {institutions.length === 0 && (
+                  <Typography variant="body2" color="text.secondary">
+                    No institutions found
                   </Typography>
                 )}
               </Box>
-            ))}
-            
-            {institutions.length === 0 && (
-              <Typography variant="body2" color="text.secondary">
-                No institutions found
-              </Typography>
-            )}
-          </Paper>
+            </CardContent>
+          </Card>
         </Box>
         
         <Box sx={{ width: { xs: '100%', md: '72%' }, flexGrow: 1 }}>
@@ -355,6 +390,7 @@ const VenueAttendancePage: React.FC = () => {
 };
 
 export default VenueAttendancePage;
+
 
 
 

@@ -7,11 +7,15 @@ import {
   Paper, 
   Container,
   Alert,
-  CircularProgress
+  CircularProgress,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import Avatar from '@mui/material/Avatar';
 
 const AdminLogin: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -20,6 +24,8 @@ const AdminLogin: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +36,6 @@ const AdminLogin: React.FC = () => {
       await login(email, password);
       navigate('/admin/dashboard');
     } catch (err) {
-      // Use the error variable by logging it
       console.error('Login failed:', err);
       setError('Invalid email or password');
     } finally {
@@ -39,20 +44,40 @@ const AdminLogin: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
-          <Typography component="h1" variant="h5" align="center" gutterBottom>
-            Admin Login
-          </Typography>
-          
+    <Container maxWidth="xs">
+      <Box 
+        sx={{ 
+          mt: 8, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center',
+          px: isMobile ? 2 : 0
+        }}
+      >
+        <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
+          <LockOutlinedIcon />
+        </Avatar>
+        
+        <Typography component="h1" variant="h5" gutterBottom>
+          Admin Login
+        </Typography>
+        
+        <Paper 
+          elevation={3} 
+          sx={{ 
+            p: 4, 
+            width: '100%', 
+            borderRadius: 2,
+            mt: 2
+          }}
+        >
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
             </Alert>
           )}
           
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+          <Box component="form" onSubmit={handleSubmit}>
             <TextField
               margin="normal"
               required
@@ -64,6 +89,8 @@ const AdminLogin: React.FC = () => {
               autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              size="small"
+              sx={{ mb: 2 }}
             />
             <TextField
               margin="normal"
@@ -76,13 +103,19 @@ const AdminLogin: React.FC = () => {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              size="small"
+              sx={{ mb: 3 }}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
               disabled={loading}
+              sx={{ 
+                py: 1.5,
+                textTransform: 'none',
+                fontWeight: 600
+              }}
             >
               {loading ? <CircularProgress size={24} /> : 'Sign In'}
             </Button>

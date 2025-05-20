@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Box, useTheme, useMediaQuery } from '@mui/material';
+import { Box, useTheme, useMediaQuery, Card } from '@mui/material';
 import AdminHeader from './AdminHeader';
 import { Sidebar } from './Sidebar';
 import { Outlet, useLocation } from 'react-router-dom';
+
+const drawerWidth = 240;
 
 const AdminLayout: React.FC = () => {
   const theme = useTheme();
@@ -28,33 +30,59 @@ const AdminLayout: React.FC = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden', bgcolor: '#f5f7fa' }}>
       <AdminHeader onMenuClick={handleSidebarToggle} title={getPageTitle()} />
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: { xs: 2, sm: 3 },
-          width: { sm: `calc(100% - ${sidebarOpen ? 240 : 0}px)` },
-          mt: '64px', // AppBar height
-          ml: { sm: sidebarOpen ? '240px' : 0 },
+          width: { sm: `calc(100% - ${sidebarOpen ? drawerWidth : 0}px)` },
+          ml: { sm: sidebarOpen ? `${drawerWidth}px` : 0 },
           transition: theme.transitions.create(['margin', 'width'], {
-            easing: theme.transitions.easing.easeOut,
-            duration: theme.transitions.duration.enteringScreen,
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
           }),
-          overflowY: 'auto',
+          mt: '64px', // AppBar height
           height: 'calc(100vh - 64px)',
-          bgcolor: '#f8fafc',
+          overflow: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          p: { xs: 2, sm: 3 }
         }}
       >
-        {/* This is crucial - it renders the child routes */}
-        <Outlet />
+        <Box 
+          sx={{ 
+            maxWidth: '1400px', 
+            width: '100%',
+            mx: 'auto',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            flexGrow: 1
+          }}
+        >
+          <Card 
+            sx={{ 
+              p: { xs: 2, sm: 3 },
+              borderRadius: 2,
+              boxShadow: theme.shadows[2],
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            <Outlet />
+          </Card>
+        </Box>
       </Box>
     </Box>
   );
 };
 
 export default AdminLayout;
+
+
+
 
 

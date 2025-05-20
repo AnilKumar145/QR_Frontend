@@ -194,7 +194,9 @@ export const Layout: React.FC = () => {
           mt: '64px', // AppBar height
           height: 'calc(100vh - 64px)',
           bgcolor: '#f8fafc', // Light background for content area
-          overflow: 'auto'
+          overflow: 'auto',
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
         <Container 
@@ -202,7 +204,10 @@ export const Layout: React.FC = () => {
           sx={{ 
             py: { xs: 3, sm: 4 },
             px: { xs: 2, sm: 3, md: 4 },
-            height: '100%'
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            flexGrow: 1
           }}
         >
           <Outlet />
@@ -211,6 +216,7 @@ export const Layout: React.FC = () => {
     </Box>
   );
 };
+
 
 
 

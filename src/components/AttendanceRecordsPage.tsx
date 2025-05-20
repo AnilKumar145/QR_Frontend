@@ -2,7 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import { 
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, 
   TableHead, TableRow, TextField, InputAdornment, CircularProgress,
-  Chip, Button, Tooltip, Menu, MenuItem, ListItemIcon, ListItemText
+  Chip, Button, Menu, MenuItem, ListItemIcon, ListItemText,
+  TablePagination, Card, useTheme
 } from '@mui/material';
 import { 
   Search as SearchIcon, 
@@ -32,17 +33,14 @@ const AttendanceRecordsPage: React.FC = () => {
   const { token } = useContext(AuthContext);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [filteredAttendance, setFilteredAttendance] = useState<AttendanceRecord[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState('');
-  const [exportAnchorEl, setExportAnchorEl] = useState<null | HTMLElement>(null);
-  const [exportLoading, setExportLoading] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-
-  const handleSidebarToggle = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+  const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const theme = useTheme();
 
   useEffect(() => {
     const fetchAttendance = async () => {
@@ -66,27 +64,28 @@ const AttendanceRecordsPage: React.FC = () => {
   }, [token]);
 
   useEffect(() => {
-    // Filter attendance based on search query
-    if (searchQuery.trim() === '') {
+    if (searchTerm.trim() === '') {
       setFilteredAttendance(attendance);
     } else {
+      const lowercasedSearch = searchTerm.toLowerCase();
       const filtered = attendance.filter(record => 
-        record.roll_no.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        record.name.toLowerCase().includes(searchQuery.toLowerCase())
+        record.name.toLowerCase().includes(lowercasedSearch) ||
+        record.roll_no.toLowerCase().includes(lowercasedSearch) ||
+        record.branch.toLowerCase().includes(lowercasedSearch) ||
+        record.section.toLowerCase().includes(lowercasedSearch)
       );
       setFilteredAttendance(filtered);
     }
-  }, [searchQuery, attendance]);
+    setPage(0); // Reset to first page when filtering
+  }, [searchTerm, attendance]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
+    setSearchTerm(event.target.value);
   };
 
   const handleRefresh = async () => {
-    if (!token) return;
-    
     try {
-      setRefreshing(true);
+      setLoading(true);
       const response = await axios.get('https://qr-backend-1-pq5i.onrender.com/api/v1/admin/attendance/all', {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -95,70 +94,45 @@ const AttendanceRecordsPage: React.FC = () => {
       setError('');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { detail?: string } } };
-      setError(error.response?.data?.detail || 'Failed to refresh attendance records');
+      setError(error.response?.data?.detail || 'Failed to fetch attendance records');
     } finally {
-      setRefreshing(false);
+      setLoading(false);
     }
   };
 
-  const handleExportClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setExportAnchorEl(event.currentTarget);
+  const handleExportClick = (event: React.MouseEvent<HTMLElement>) => {
+    setExportMenuAnchor(event.currentTarget);
   };
 
   const handleExportClose = () => {
-    setExportAnchorEl(null);
+    setExportMenuAnchor(null);
   };
 
-  const exportToExcel = async () => {
-    try {
-      setExportLoading(true);
-      
-      // Dynamically import XLSX to avoid TypeScript errors
-      const XLSX = await import('xlsx');
-      
-      // Create a worksheet from the filtered attendance data
-      const worksheet = XLSX.utils.json_to_sheet(filteredAttendance);
-      
-      // Create a workbook and add the worksheet
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance');
-      
-      // Generate filename with current date
-      const date = new Date().toISOString().split('T')[0];
-      const fileName = `attendance_records_${date}.xlsx`;
-      
-      // Write the file and trigger download
-      XLSX.writeFile(workbook, fileName);
-      
-      setExportLoading(false);
-      handleExportClose();
-    } catch (error) {
-      console.error('Error exporting to Excel:', error);
-      setExportLoading(false);
-    }
+  const handleChangePage = (_: unknown, newPage: number) => {
+    setPage(newPage);
   };
 
-  const exportToPDF = () => {
-    // This would typically use a library like jsPDF
-    alert('PDF export functionality coming soon!');
-    handleExportClose();
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
-  const printRecords = () => {
-    window.print();
-    handleExportClose();
-  };
+  // Calculate displayed records based on pagination
+  const displayedRecords = filteredAttendance.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh' }}>
-      <AdminHeader onMenuClick={handleSidebarToggle} title="Attendance Records" />
+    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      <AdminHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} title="Attendance Records" />
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
+          p: { xs: 2, sm: 3 },
           width: { sm: `calc(100% - ${sidebarOpen ? 240 : 0}px)` },
           mt: '64px',
           ml: { sm: sidebarOpen ? '240px' : 0 },
@@ -169,132 +143,176 @@ const AttendanceRecordsPage: React.FC = () => {
           overflowY: 'auto'
         }}
       >
-        <Box sx={{ width: '100%' }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h5" component="h1" sx={{ fontWeight: 600 }}>
-              Attendance Records
-            </Typography>
-            
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Tooltip title="Refresh data">
-                <Button
-                  variant="outlined"
-                  color="primary"
+        <Box sx={{ maxWidth: '1400px', mx: 'auto' }}>
+          <Card sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: theme.shadows[2] }}>
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: { xs: 'column', sm: 'row' }, 
+              justifyContent: 'space-between', 
+              alignItems: { xs: 'flex-start', sm: 'center' }, 
+              mb: 2,
+              gap: 2
+            }}>
+              <Typography variant="h5" component="h1" sx={{ fontWeight: 600 }}>
+                Attendance Records
+              </Typography>
+              
+              <Box sx={{ 
+                display: 'flex', 
+                gap: 1,
+                width: { xs: '100%', sm: 'auto' },
+                flexWrap: 'wrap'
+              }}>
+                <TextField
+                  placeholder="Search records..."
+                  size="small"
+                  sx={{ 
+                    minWidth: { xs: '100%', sm: '220px' },
+                    backgroundColor: 'white'
+                  }}
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                
+                <Button 
+                  variant="outlined" 
                   startIcon={<RefreshIcon />}
                   onClick={handleRefresh}
-                  disabled={refreshing}
-                  size="small"
+                  disabled={loading}
+                  sx={{ minWidth: { xs: '100%', sm: 'auto' } }}
                 >
-                  {refreshing ? 'Refreshing...' : 'Refresh'}
+                  Refresh
                 </Button>
-              </Tooltip>
-              
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<FileDownloadIcon />}
-                onClick={handleExportClick}
-                disabled={loading || refreshing || filteredAttendance.length === 0}
-                size="small"
-              >
-                Export
-              </Button>
-              <Menu
-                anchorEl={exportAnchorEl}
-                open={Boolean(exportAnchorEl)}
-                onClose={handleExportClose}
-              >
-                <MenuItem onClick={exportToExcel} disabled={exportLoading}>
-                  <ListItemIcon>
-                    <TableChartIcon fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText>Export to Excel</ListItemText>
-                </MenuItem>
-                <MenuItem onClick={exportToPDF} disabled={exportLoading}>
-                  <ListItemIcon>
-                    <PictureAsPdfIcon fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText>Export to PDF</ListItemText>
-                </MenuItem>
-                <MenuItem onClick={printRecords} disabled={exportLoading}>
-                  <ListItemIcon>
-                    <PrintIcon fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText>Print Records</ListItemText>
-                </MenuItem>
-              </Menu>
-            </Box>
-          </Box>
-
-          <Paper sx={{ p: 3, mb: 3 }}>
-            <TextField
-              placeholder="Search by name or roll number"
-              variant="outlined"
-              size="small"
-              fullWidth
-              value={searchQuery}
-              onChange={handleSearchChange}
-              sx={{ mb: 3 }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
-
-            {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-                <CircularProgress />
+                
+                <Button 
+                  variant="contained" 
+                  startIcon={<FileDownloadIcon />}
+                  onClick={handleExportClick}
+                  sx={{ minWidth: { xs: '100%', sm: 'auto' } }}
+                >
+                  Export
+                </Button>
+                
+                <Menu
+                  anchorEl={exportMenuAnchor}
+                  open={Boolean(exportMenuAnchor)}
+                  onClose={handleExportClose}
+                >
+                  <MenuItem onClick={handleExportClose}>
+                    <ListItemIcon>
+                      <TableChartIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Export as CSV</ListItemText>
+                  </MenuItem>
+                  <MenuItem onClick={handleExportClose}>
+                    <ListItemIcon>
+                      <PictureAsPdfIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Export as PDF</ListItemText>
+                  </MenuItem>
+                  <MenuItem onClick={handleExportClose}>
+                    <ListItemIcon>
+                      <PrintIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Print</ListItemText>
+                  </MenuItem>
+                </Menu>
               </Box>
-            ) : error ? (
-              <Typography color="error" sx={{ p: 2 }}>
-                {error}
-              </Typography>
-            ) : (
-              <TableContainer>
-                <Table size="small" id="attendance-table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Name</TableCell>
-                      <TableCell>Roll No</TableCell>
-                      <TableCell>Branch</TableCell>
-                      <TableCell>Section</TableCell>
-                      <TableCell>Timestamp</TableCell>
-                      <TableCell>Location</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {filteredAttendance.length > 0 ? (
-                      filteredAttendance.map((record) => (
-                        <TableRow key={record.id}>
-                          <TableCell>{record.name}</TableCell>
-                          <TableCell>{record.roll_no}</TableCell>
-                          <TableCell>{record.branch}</TableCell>
-                          <TableCell>{record.section}</TableCell>
-                          <TableCell>{new Date(record.timestamp).toLocaleString()}</TableCell>
-                          <TableCell>
-                            <Chip
-                              label={record.is_valid_location ? "Valid" : "Invalid"}
-                              color={record.is_valid_location ? "success" : "error"}
-                              size="small"
-                            />
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={6} align="center">
-                          No records found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+            </Box>
+            
+            {error && (
+              <Box sx={{ mb: 2 }}>
+                <Typography color="error" sx={{ p: 2, bgcolor: 'error.lighter', borderRadius: 1 }}>
+                  {error}
+                </Typography>
+              </Box>
             )}
-          </Paper>
+
+            <Paper sx={{ 
+              width: '100%', 
+              overflow: 'hidden',
+              borderRadius: 1,
+              boxShadow: 'none',
+              border: '1px solid',
+              borderColor: 'divider'
+            }}>
+              {loading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                  <CircularProgress />
+                </Box>
+              ) : (
+                <>
+                  <TableContainer sx={{ maxHeight: 'calc(100vh - 280px)' }}>
+                    <Table stickyHeader size="small" id="attendance-table">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 'bold', bgcolor: 'background.paper' }}>Name</TableCell>
+                          <TableCell sx={{ fontWeight: 'bold', bgcolor: 'background.paper' }}>Roll No</TableCell>
+                          <TableCell sx={{ fontWeight: 'bold', bgcolor: 'background.paper' }}>Branch</TableCell>
+                          <TableCell sx={{ fontWeight: 'bold', bgcolor: 'background.paper' }}>Section</TableCell>
+                          <TableCell sx={{ fontWeight: 'bold', bgcolor: 'background.paper' }}>Timestamp</TableCell>
+                          <TableCell sx={{ fontWeight: 'bold', bgcolor: 'background.paper' }}>Location</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {displayedRecords.length > 0 ? (
+                          displayedRecords.map((record) => (
+                            <TableRow 
+                              key={record.id}
+                              hover
+                              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                            >
+                              <TableCell>{record.name}</TableCell>
+                              <TableCell>{record.roll_no}</TableCell>
+                              <TableCell>{record.branch}</TableCell>
+                              <TableCell>{record.section}</TableCell>
+                              <TableCell>{new Date(record.timestamp).toLocaleString()}</TableCell>
+                              <TableCell>
+                                <Chip
+                                  label={record.is_valid_location ? "Valid" : "Invalid"}
+                                  color={record.is_valid_location ? "success" : "error"}
+                                  size="small"
+                                  variant="outlined"
+                                  sx={{ 
+                                    fontWeight: 500,
+                                    minWidth: '70px'
+                                  }}
+                                />
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
+                              <Typography variant="body1" color="text.secondary">
+                                No records found
+                              </Typography>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                  <TablePagination
+                    rowsPerPageOptions={[5, 10, 25, 50]}
+                    component="div"
+                    count={filteredAttendance.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                  />
+                </>
+              )}
+            </Paper>
+          </Card>
         </Box>
       </Box>
     </Box>
@@ -324,10 +342,5 @@ export default AttendanceRecordsPage;
     }
   `}
 </style>
-
-
-
-
-
 
 
