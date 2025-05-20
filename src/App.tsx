@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AttendanceMarking } from './components/AttendanceMarking';
 import { QRCodeDisplay } from './components/QRCodeDisplay';
 import AdminLogin from './components/AdminLogin';
-import AdminDashboard from './components/AdminDashboard';
+import AdminLayout from './components/AdminLayout';
 import StudentSelfiesPage from './components/StudentSelfiesPage';
 import AttendanceRecordsPage from './components/AttendanceRecordsPage';
 import FlaggedLogsPage from './components/FlaggedLogsPage';
@@ -21,6 +21,7 @@ import { Home } from './pages/Home';
 import theme from './theme';
 // Import the missing components
 import VenueAttendancePage from './components/VenueAttendancePage';
+import AdminDashboard from './components/AdminDashboard';
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
@@ -40,13 +41,15 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
-            {/* Routes inside the layout */}
+            {/* Public routes */}
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
               <Route path="/qr-generator" element={<QRCodeDisplay />} />
               <Route path="/admin/login" element={<AdminLogin />} />
-              
-              {/* Protected Routes */}
+            </Route>
+            
+            {/* Admin routes with AdminLayout */}
+            <Route element={<AdminLayout />}>
               <Route 
                 path="/admin/dashboard" 
                 element={
@@ -111,7 +114,6 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
-              <Route path="*" element={<NotFound />} />
             </Route>
             
             {/* Routes outside the layout */}
@@ -127,7 +129,6 @@ function App() {
 }
 
 export default App;
-
 
 
 
