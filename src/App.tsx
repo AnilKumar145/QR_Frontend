@@ -20,6 +20,7 @@ import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import theme from './theme';
 import VenueAttendancePage from './components/VenueAttendancePage';
+import AdminLayout from './components/AdminLayout';
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
@@ -46,47 +47,49 @@ function App() {
               <Route path="/admin/login" element={<AdminLogin />} />
             </Route>
             
-            {/* Admin routes */}
-            <Route path="/admin/dashboard" element={
-              <ProtectedRoute>
-                <AdminDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/selfies" element={
-              <ProtectedRoute>
-                <StudentSelfiesPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/attendance" element={
-              <ProtectedRoute>
-                <AttendanceRecordsPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/flagged-logs" element={
-              <ProtectedRoute>
-                <FlaggedLogsPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/statistics" element={
-              <ProtectedRoute>
-                <StatisticsPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/institutions" element={
-              <ProtectedRoute>
-                <InstitutionsPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/venues" element={
-              <ProtectedRoute>
-                <VenuesPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/venue-attendance" element={
-              <ProtectedRoute>
-                <VenueAttendancePage />
-              </ProtectedRoute>
-            } />
+            {/* Admin routes - wrap these in AdminLayout */}
+            <Route element={<AdminLayout />}>
+              <Route path="/admin/dashboard" element={
+                <ProtectedRoute>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/selfies" element={
+                <ProtectedRoute>
+                  <StudentSelfiesPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/attendance" element={
+                <ProtectedRoute>
+                  <AttendanceRecordsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/flagged-logs" element={
+                <ProtectedRoute>
+                  <FlaggedLogsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/statistics" element={
+                <ProtectedRoute>
+                  <StatisticsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/institutions" element={
+                <ProtectedRoute>
+                  <InstitutionsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/venues" element={
+                <ProtectedRoute>
+                  <VenuesPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/venue-attendance" element={
+                <ProtectedRoute>
+                  <VenueAttendancePage />
+                </ProtectedRoute>
+              } />
+            </Route>
             
             {/* Routes outside the layout */}
             <Route path="/mark-attendance/:sessionId" element={<AttendanceMarking />} />
@@ -100,10 +103,6 @@ function App() {
 }
 
 export default App;
-
-
-
-
 
 
 

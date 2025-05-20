@@ -45,24 +45,16 @@ const AdminLayout: React.FC = () => {
           }),
           overflowY: 'auto',
           height: 'calc(100vh - 64px)',
-          bgcolor: '#f8fafc', // Light background for content area
-          display: 'flex',  // Add this to enable centering
-          justifyContent: 'center', // Center horizontally
+          bgcolor: '#f8fafc',
         }}
       >
-        <Box 
-          sx={{ 
-            maxWidth: '1200px', // Reduced from 1400px
-            width: '100%',
-            pb: 4,
-          }}
-        >
-          <Outlet />
-        </Box>
+        {/* This is crucial - it renders the child routes */}
+        <Outlet />
       </Box>
     </Box>
   );
 };
 
 export default AdminLayout;
+
 
