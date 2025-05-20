@@ -4,11 +4,12 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AttendanceMarking } from './components/AttendanceMarking';
 import { QRCodeDisplay } from './components/QRCodeDisplay';
 import AdminLogin from './components/AdminLogin';
-import AdminLayout from './components/AdminLayout';
+import AdminDashboard from './components/AdminDashboard';
 import StudentSelfiesPage from './components/StudentSelfiesPage';
 import AttendanceRecordsPage from './components/AttendanceRecordsPage';
 import FlaggedLogsPage from './components/FlaggedLogsPage';
 import StatisticsPage from './components/StatisticsPage';
+import NotFound from './components/NotFound';
 import { AuthProvider } from './contexts/AuthContext';
 import { AuthContext } from './contexts/AuthContext';
 import { useContext } from 'react';
@@ -20,7 +21,6 @@ import { Home } from './pages/Home';
 import theme from './theme';
 // Import the missing components
 import VenueAttendancePage from './components/VenueAttendancePage';
-import AdminDashboard from './components/AdminDashboard';
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
@@ -40,15 +40,13 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
-            {/* Public routes */}
+            {/* Routes inside the layout */}
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
               <Route path="/qr-generator" element={<QRCodeDisplay />} />
               <Route path="/admin/login" element={<AdminLogin />} />
-            </Route>
-            
-            {/* Admin routes with AdminLayout */}
-            <Route element={<AdminLayout />}>
+              
+              {/* Protected Routes */}
               <Route 
                 path="/admin/dashboard" 
                 element={
@@ -113,6 +111,7 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
+              <Route path="*" element={<NotFound />} />
             </Route>
             
             {/* Routes outside the layout */}
