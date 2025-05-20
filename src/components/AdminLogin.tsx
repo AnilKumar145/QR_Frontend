@@ -1,72 +1,96 @@
 import React, { useState } from 'react';
-import { Box, useTheme, useMediaQuery } from '@mui/material';
-import AdminHeader from './AdminHeader';
-import { Sidebar } from './Sidebar';
-import { Outlet, useLocation } from 'react-router-dom';
+import { 
+  Box, 
+  Typography, 
+  TextField, 
+  Button, 
+  Paper, 
+  Container,
+  Alert,
+  CircularProgress
+} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { AuthContext } from '../contexts/AuthContext';
 
-const AdminLayout: React.FC = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
-  const location = useLocation();
-  const handleSidebarToggle = () => {
+const AdminLogin: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
-    setSidebarOpen(!sidebarOpen);
-
-  };
-
-  // Get page title based on current route for the header
-  const getPageTitle = () => {
-    const path = location.pathname;
-    if (path === '/admin/dashboard') return 'Admin Dashboard';
-    if (path === '/admin/attendance') return 'Attendance Records';
-    if (path === '/admin/selfies') return 'Student Selfies';
-    if (path === '/admin/institutions') return 'Institutions';
-    if (path === '/admin/venues') return 'Venues';
-    if (path === '/admin/flagged-logs') return 'Flagged Logs';
-    if (path === '/admin/statistics') return 'Statistics';
-    return 'Admin Panel';
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    
+    try {
+      await login(email, password);
+      navigate('/admin/dashboard');
+    } catch (err) {
+      // Use the error variable by logging it
+      console.error('Login failed:', err);
+      setError('Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-      <AdminHeader onMenuClick={handleSidebarToggle} title={getPageTitle()} />
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: { xs: 2, sm: 3 },
-          width: { sm: `calc(100% - ${sidebarOpen ? 240 : 0}px)` },
-          mt: '64px', // AppBar height
-          ml: { sm: sidebarOpen ? '240px' : 0 },
-          transition: theme.transitions.create(['margin', 'width'], {
-            easing: theme.transitions.easing.easeOut,
-            duration: theme.transitions.duration.enteringScreen,
-          }),
-          overflowY: 'auto',
-          height: 'calc(100vh - 64px)',
-          bgcolor: '#f8fafc', // Light background for content area
-          display: 'flex',  // Add this to enable centering
-          justifyContent: 'center', // Center horizontally
-        }}
-      >
-        <Box
-          sx={{
-            maxWidth: '1200px', // Reduced from 1400px
-            width: '100%',
-            pb: 4,
-          }}
-        >
-          <Outlet />
-        </Box>
+    <Container maxWidth="sm">
+      <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
+          <Typography component="h1" variant="h5" align="center" gutterBottom>
+            Admin Login
+          </Typography>
+          
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="email"
+              label="Email Address"
+              name="email"
+              autoComplete="email"
+              autoFocus
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Password"
+              type="password"
+              id="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+              disabled={loading}
+            >
+              {loading ? <CircularProgress size={24} /> : 'Sign In'}
+            </Button>
+          </Box>
+        </Paper>
       </Box>
-    </Box>
+    </Container>
   );
 };
-export default AdminLayout;
 
-
-
-
-
+export default AdminLogin;

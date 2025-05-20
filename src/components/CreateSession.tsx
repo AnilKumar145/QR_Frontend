@@ -51,8 +51,11 @@ const CreateSession: React.FC = () => {
       setTimeout(() => {
         navigate('/admin/dashboard');
       }, 2000);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to create session');
+    } catch (err) {
+      const errorMessage = axios.isAxiosError(err) 
+        ? err.response?.data?.detail || 'Failed to create session'
+        : 'Failed to create session';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -144,3 +147,4 @@ const CreateSession: React.FC = () => {
 };
 
 export default CreateSession;
+

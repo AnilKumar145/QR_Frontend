@@ -48,43 +48,43 @@ function App() {
             </Route>
             
             {/* Admin routes - wrap these in AdminLayout */}
-            <Route element={<AdminLayout />}>
-              <Route path="/admin/dashboard" element={
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route path="dashboard" element={
                 <ProtectedRoute>
                   <AdminDashboard />
                 </ProtectedRoute>
               } />
-              <Route path="/admin/selfies" element={
+              <Route path="selfies" element={
                 <ProtectedRoute>
                   <StudentSelfiesPage />
                 </ProtectedRoute>
               } />
-              <Route path="/admin/attendance" element={
+              <Route path="attendance" element={
                 <ProtectedRoute>
                   <AttendanceRecordsPage />
                 </ProtectedRoute>
               } />
-              <Route path="/admin/flagged-logs" element={
+              <Route path="flagged-logs" element={
                 <ProtectedRoute>
                   <FlaggedLogsPage />
                 </ProtectedRoute>
               } />
-              <Route path="/admin/statistics" element={
+              <Route path="statistics" element={
                 <ProtectedRoute>
                   <StatisticsPage />
                 </ProtectedRoute>
               } />
-              <Route path="/admin/institutions" element={
+              <Route path="institutions" element={
                 <ProtectedRoute>
                   <InstitutionsPage />
                 </ProtectedRoute>
               } />
-              <Route path="/admin/venues" element={
+              <Route path="venues" element={
                 <ProtectedRoute>
                   <VenuesPage />
                 </ProtectedRoute>
               } />
-              <Route path="/admin/venue-attendance" element={
+              <Route path="venue-attendance" element={
                 <ProtectedRoute>
                   <VenueAttendancePage />
                 </ProtectedRoute>
@@ -103,6 +103,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
