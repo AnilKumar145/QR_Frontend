@@ -69,7 +69,22 @@ const AdminLayout: React.FC = () => {
               boxShadow: theme.shadows[2],
               height: '100%',
               display: 'flex',
-              flexDirection: 'column'
+              flexDirection: 'column',
+              // Center content regardless of sidebar state
+              '& .MuiTableContainer-root': {
+                maxWidth: '100%',
+                mx: 'auto'
+              },
+              '& .MuiTable-root': {
+                width: '100%',
+                tableLayout: 'fixed'
+              },
+              '& .MuiTableCell-root': {
+                textAlign: 'center'
+              },
+              '& .MuiTableHead-root .MuiTableCell-root': {
+                fontWeight: 'bold'
+              }
             }}
           >
             <Outlet />
@@ -81,6 +96,7 @@ const AdminLayout: React.FC = () => {
 };
 
 export default AdminLayout;
+
 
 
 

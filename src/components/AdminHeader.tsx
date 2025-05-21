@@ -41,7 +41,7 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({
       position="fixed" 
       sx={{ 
         zIndex: theme.zIndex.drawer + 1,
-        background: theme.palette.primary.main,
+        background: '#2b2d42', // Dark navy/gray color instead of blue
         boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
       }}
     >
@@ -77,4 +77,5 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({
 };
 
 export default AdminHeader;
+
 
